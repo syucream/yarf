@@ -1,0 +1,9 @@
+[package]
+name = "yarf"
+version = "0.0.1"
+authors = ["Ryo Okubo <syucream1031@gmail.com>"]
+license = "MIT"
+description = "A yet another rust-fuse"
+
+[dependencies]
+libc = "0.2.46"
