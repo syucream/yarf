@@ -50,7 +50,7 @@ pub enum fuse_fill_dir_flags {
 }
 
 #[allow(non_camel_case_types)]
-type fuse_fill_dir_t = extern fn(
+pub type fuse_fill_dir_t = extern fn(
     buf: *mut c_void, path: *const c_char, stbuf: *const stat, off: off_t, flags: fuse_fill_dir_flags
 ) -> c_int;
 
