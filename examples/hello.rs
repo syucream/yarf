@@ -4,8 +4,8 @@ extern crate yarf;
 use std::ffi::CString;
 use libc::{c_char, c_int, c_uint, c_ulong, c_void, off_t, size_t, stat, uint64_t};
 use yarf::{fuse_args, fuse_file_info, fuse_fill_dir_t, fuse_readdir_flags, fuse_operations};
-use std::ptr::null;
 use std::ptr::null_mut;
+use std::mem::size_of_val;
 
 
 extern "C" fn getattr(path: *const c_char, stbuf: *mut stat, fi: *mut fuse_file_info) -> c_int {
@@ -38,6 +38,7 @@ fn main() {
 
     unsafe {
         let pdata: *mut c_void = null_mut();
-        yarf::fuse_main(c_args.len() as c_int, c_args.as_ptr(), ops, pdata)
+        let opsize: size_t = size_of_val(&ops);
+        yarf::fuse_main_real(c_args.len() as c_int, c_args.as_ptr(), ops, opsize, pdata)
     };
 }

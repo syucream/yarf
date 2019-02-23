@@ -69,6 +69,6 @@ pub struct fuse_operations {
 #[link(name = "fuse")]
 extern "C" {
     pub fn fuse_opt_parse(args: *mut fuse_args, data: *mut c_void, opts: *const fuse_opt, proc: fuse_opt_proc_t) -> c_int;
-    pub fn fuse_main(argc: c_int, argv: *const *const c_char, op: fuse_operations, private_data: *mut c_void) -> c_int;
+    pub fn fuse_main_real(argc: c_int, argv: *const *const c_char, op: fuse_operations, op_size: size_t, private_data: *mut c_void) -> c_int;
     pub fn fuse_opt_free_args(args: *mut fuse_args) -> c_void;
 }
