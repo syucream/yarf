@@ -7,3 +7,7 @@ description = "A yet another rust-fuse"
 
 [dependencies]
 libc = "0.2.46"
+
+[[bin]]
+name = "hello"
+path = "examples/hello.rs"
