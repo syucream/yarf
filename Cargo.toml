@@ -5,6 +5,9 @@ authors = ["Ryo Okubo <syucream1031@gmail.com>"]
 license = "MIT"
 description = "A yet another rust-fuse"
 
+[build-dependencies]
+pkg-config = "0.3"
+
 [dependencies]
 libc = "0.2.46"
 

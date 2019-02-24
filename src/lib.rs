@@ -63,13 +63,12 @@ type fuse_opt_proc_t = extern fn(data: *mut c_void, arg: *const c_char, key: c_i
 #[repr(C)]
 #[allow(non_camel_case_types)]
 pub struct fuse_operations {
-    pub getattr: extern fn(path: *const c_char, stbuf: *mut stat, fi: *mut fuse_file_info) -> c_int,
-    pub readdir: extern fn(path: *const c_char, buf: *mut c_void, filler: fuse_fill_dir_t, offset: off_t, fi: *mut fuse_file_info, flags: fuse_readdir_flags) -> c_int,
+    pub getattr: extern fn(path: *const c_char, stbuf: *mut stat) -> c_int,
+    pub readdir: extern fn(path: *const c_char, buf: *mut c_void, filler: fuse_fill_dir_t, offset: off_t, fi: *mut fuse_file_info) -> c_int,
     pub open: extern fn(path: *const c_char, fi: *mut fuse_file_info) -> c_int,
     pub read: extern fn(path: *const c_char, buf: *mut c_char, size: size_t, offset: off_t, fi: *mut fuse_file_info) -> c_int,
 }
 
-#[link(name = "fuse")]
 extern "C" {
     pub fn fuse_opt_parse(args: *mut fuse_args, data: *mut c_void, opts: *const fuse_opt, proc: fuse_opt_proc_t) -> c_int;
     pub fn fuse_main_real(argc: c_int, argv: *const *const c_char, op: fuse_operations, op_size: size_t, private_data: *mut c_void) -> c_int;
