@@ -1,6 +1,7 @@
 extern crate libc;
 
-use libc::{c_char, c_int, c_uint, c_ulong, c_void, off_t, size_t, stat, uint64_t};
+use libc::{off_t, size_t, stat};
+use std::os::raw::{c_char, c_int, c_uint, c_ulong, c_void, c_ulonglong};
 
 #[repr(C)]
 #[allow(non_camel_case_types)]
@@ -32,20 +33,22 @@ pub struct fuse_file_info {
         pub flock_release: c_uint,
         pub padding: c_uint,
     */
-    pub fh: uint64_t,
-    pub lock_owner: uint64_t,
-    pub poll_events: uint64_t,
+    pub fh: c_ulonglong,
+    pub lock_owner: c_ulonglong,
+    pub poll_events: c_ulonglong,
 }
 
 #[repr(C)]
 #[allow(non_camel_case_types)]
 pub enum fuse_readdir_flags {
+    FUSE_READDIR_ZERO = 0,
     FUSE_READDIR_PLUS = (1 << 1)
 }
 
 #[repr(C)]
 #[allow(non_camel_case_types)]
 pub enum fuse_fill_dir_flags {
+    FUSE_FILL_DIR_ZERO = 0,
     FUSE_FILL_DIR_PLUS = (1 << 1)
 }
 
