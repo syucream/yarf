@@ -41,7 +41,7 @@ extern "C" fn yarf_getattr(path: *const c_char, stbuf: *mut stat) -> c_int {
             }
             0
         }
-        _ => libc::ENOENT
+        _ => -libc::ENOENT
     }
 }
 
@@ -83,7 +83,7 @@ extern "C" fn yarf_readdir(
             0
         }
 
-        _ => libc::ENOENT,
+        _ => -libc::ENOENT,
     }
 }
 
@@ -93,7 +93,7 @@ extern "C" fn yarf_open(path: *const c_char, _fi: *mut fuse_file_info) -> c_int 
 
     match path_slice {
         HELLO_PATH => 0,
-        _ => libc::ENOENT,
+        _ => -libc::ENOENT,
     }
 }
 
@@ -117,7 +117,7 @@ extern "C" fn yarf_read(
             }
             0
         }
-        _ => libc::ENOENT,
+        _ => -libc::ENOENT,
     }
 }
 
