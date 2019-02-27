@@ -1,11 +1,26 @@
 extern crate libc;
 
-use libc::{off_t, size_t, stat};
-use std::os::raw::{c_char, c_int, c_uint, c_ulong, c_ulonglong, c_void};
+use libc::stat;
+use std::os::raw::{c_char, c_int, c_uint, c_ulong};
+
+#[allow(non_camel_case_types)]
+pub type off_t = ::std::os::raw::c_longlong;
+
+#[repr(C)]
+#[derive(Copy, Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[allow(non_camel_case_types)]
+pub struct __BindgenBitfieldUnit<Storage, Align>
+    where
+        Storage: AsRef<[u8]> + AsMut<[u8]>,
+{
+    storage: Storage,
+    align: [Align; 0],
+}
 
 #[doc = " Argument list"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
+#[allow(non_camel_case_types)]
 pub struct fuse_args {
     #[doc = " Argument count"]
     pub argc: ::std::os::raw::c_int,
@@ -30,6 +45,7 @@ pub struct fuse_opt {
 #[doc = " value must usually be smaller than the indicated value."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
+#[allow(non_camel_case_types)]
 pub struct fuse_conn_info {
     #[doc = " Major version of the protocol (read-only)"]
     pub proto_major: ::std::os::raw::c_uint,
@@ -45,55 +61,77 @@ pub struct fuse_conn_info {
     pub reserved: [::std::os::raw::c_uint; 26usize],
 }
 
+#[doc = " Information about open files"]
+#[doc = ""]
+#[doc = " Changed in version 2.5"]
 #[repr(C)]
+#[derive(Debug, Copy, Clone)]
 #[allow(non_camel_case_types)]
 pub struct fuse_file_info {
-    pub flag: c_int,
-    pub feature_flags: c_uint,
-    /* TODO This bit field layout is:
-        pub writepage: c_uint,
-        pub direct_io: c_uint,
-        pub keep_cache: c_uint,
-        pub flush: c_uint,
-        pub nonseekable: c_uint,
-        pub flock_release: c_uint,
-        pub padding: c_uint,
-    */
-    pub fh: c_ulonglong,
-    pub lock_owner: c_ulonglong,
-    pub poll_events: c_ulonglong,
+    #[doc = " Open flags.\t Available in open() and release()"]
+    pub flags: ::std::os::raw::c_int,
+    #[doc = " Old file handle, don\'t use"]
+    pub fh_old: ::std::os::raw::c_ulong,
+    #[doc = " In case of a write operation indicates if this was caused by a"]
+    #[doc = "writepage"]
+    pub writepage: ::std::os::raw::c_int,
+    pub _bitfield_1: __BindgenBitfieldUnit<[u8; 4usize], u32>,
+    #[doc = " File handle.  May be filled in by filesystem in open()."]
+    #[doc = "Available in all other file operations"]
+    pub fh: u64,
+    #[doc = " Lock owner id.  Available in locking operations and flush"]
+    pub lock_owner: u64,
 }
 
-#[repr(C)]
+#[doc = " Function to add an entry in a readdir() operation"]
+#[doc = ""]
+#[doc = " @param buf the buffer passed to the readdir() operation"]
+#[doc = " @param name the file name of the directory entry"]
+#[doc = " @param stat file attributes, can be NULL"]
+#[doc = " @param off offset of the next entry or zero"]
+#[doc = " @return 1 if buffer is full, zero otherwise"]
 #[allow(non_camel_case_types)]
-pub enum fuse_readdir_flags {
-    FUSE_READDIR_ZERO = 0,
-    FUSE_READDIR_PLUS = (1 << 1),
-}
+pub type fuse_fill_dir_t = ::std::option::Option<
+    unsafe extern "C" fn(
+        buf: *mut ::std::os::raw::c_void,
+        name: *const ::std::os::raw::c_char,
+        stbuf: *const stat,
+        off: off_t,
+    ) -> ::std::os::raw::c_int,
+>;
 
-#[repr(C)]
+#[doc = " Processing function"]
+#[doc = ""]
+#[doc = " This function is called if"]
+#[doc = "    - option did not match any \'struct fuse_opt\'"]
+#[doc = "    - argument is a non-option"]
+#[doc = "    - option did match and offset was set to -1"]
+#[doc = ""]
+#[doc = " The \'arg\' parameter will always contain the whole argument or"]
+#[doc = " option including the parameter if exists.  A two-argument option"]
+#[doc = " (\"-x foo\") is always converted to single arguemnt option of the"]
+#[doc = " form \"-xfoo\" before this function is called."]
+#[doc = ""]
+#[doc = " Options of the form \'-ofoo\' are passed to this function without the"]
+#[doc = " \'-o\' prefix."]
+#[doc = ""]
+#[doc = " The return value of this function determines whether this argument"]
+#[doc = " is to be inserted into the output argument vector, or discarded."]
+#[doc = ""]
+#[doc = " @param data is the user data passed to the fuse_opt_parse() function"]
+#[doc = " @param arg is the whole argument or option"]
+#[doc = " @param key determines why the processing function was called"]
+#[doc = " @param outargs the current output argument list"]
+#[doc = " @return -1 on error, 0 if arg is to be discarded, 1 if arg should be kept"]
 #[allow(non_camel_case_types)]
-pub enum fuse_fill_dir_flags {
-    FUSE_FILL_DIR_ZERO = 0,
-    FUSE_FILL_DIR_PLUS = (1 << 1),
-}
-
-#[allow(non_camel_case_types)]
-pub type fuse_fill_dir_t = extern "C" fn(
-    buf: *mut c_void,
-    path: *const c_char,
-    stbuf: *const stat,
-    off: off_t,
-    flags: fuse_fill_dir_flags,
-) -> c_int;
-
-#[allow(non_camel_case_types)]
-type fuse_opt_proc_t = extern "C" fn(
-    data: *mut c_void,
-    arg: *const c_char,
-    key: c_int,
-    outargs: *mut fuse_args,
-) -> c_int;
+pub type fuse_opt_proc_t = ::std::option::Option<
+    unsafe extern "C" fn(
+        data: *mut ::std::os::raw::c_void,
+        arg: *const ::std::os::raw::c_char,
+        key: ::std::os::raw::c_int,
+        outargs: *mut fuse_args,
+    ) -> ::std::os::raw::c_int,
+>;
 
 #[repr(C)]
 #[allow(non_camel_case_types)]

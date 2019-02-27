@@ -1,18 +1,18 @@
 extern crate libc;
 extern crate yarf;
 
-use libc::{off_t, size_t, stat};
+use libc::{size_t, stat};
 use std::ffi::{CStr, CString};
 use std::mem;
 use std::os::raw::{c_char, c_int, c_uint, c_ulong, c_ulonglong, c_void};
 use std::ptr;
 use std::ptr::null_mut;
-use yarf::{fuse_conn_info, fuse_file_info, fuse_fill_dir_t, fuse_operations};
+use yarf::{fuse_conn_info, fuse_file_info, fuse_fill_dir_t, fuse_operations, off_t};
 
 const HELLO_PATH: &str = "/hello";
 const HELLO_CONTENT: &str = "hello, fuse!";
 
-extern "C" fn yarf_init(conn: *mut fuse_conn_info) -> *mut ::std::os::raw::c_void {
+extern "C" fn yarf_init(_conn: *mut fuse_conn_info) -> *mut ::std::os::raw::c_void {
     null_mut() as *mut c_void
 }
 
@@ -20,10 +20,14 @@ extern "C" fn yarf_getattr(path: *const c_char, stbuf: *mut stat) -> c_int {
     let path_str = unsafe { CStr::from_ptr(path) };
     let path_slice = path_str.to_str().unwrap();
 
+    // zero fill
+    unsafe {
+        libc::memset(stbuf as *mut c_void, 0, mem::size_of_val(&stbuf));
+    }
+
     match path_slice {
         "/" => {
             unsafe {
-                libc::memset(stbuf as *mut c_void, 0, mem::size_of_val(&stbuf));
                 (*stbuf).st_mode = libc::S_IFDIR | 0755;
                 (*stbuf).st_nlink = 2;
             }
@@ -31,14 +35,13 @@ extern "C" fn yarf_getattr(path: *const c_char, stbuf: *mut stat) -> c_int {
         }
         HELLO_PATH => {
             unsafe {
-                libc::memset(stbuf as *mut c_void, 0, mem::size_of_val(&stbuf));
                 (*stbuf).st_mode = libc::S_IFREG | 0444;
                 (*stbuf).st_nlink = 1;
                 (*stbuf).st_size = HELLO_CONTENT.len() as i64;
             }
             0
         }
-        _ => libc::ENOENT,
+        _ => libc::ENOENT
     }
 }
 
@@ -46,42 +49,45 @@ extern "C" fn yarf_readdir(
     path: *const c_char,
     buf: *mut c_void,
     filler: fuse_fill_dir_t,
-    offset: off_t,
-    fi: *mut fuse_file_info,
+    _offset: off_t,
+    _fi: *mut fuse_file_info,
 ) -> c_int {
     let path_str = unsafe { CStr::from_ptr(path) };
     let path_slice = path_str.to_str().unwrap();
 
     match path_slice {
         "/" => {
-            filler(
-                buf,
-                CString::new(".").unwrap().as_ptr(),
-                ptr::null_mut(),
-                0,
-                yarf::fuse_fill_dir_flags::FUSE_FILL_DIR_ZERO,
-            );
-            filler(
-                buf,
-                CString::new("..").unwrap().as_ptr(),
-                ptr::null_mut(),
-                0,
-                yarf::fuse_fill_dir_flags::FUSE_FILL_DIR_ZERO,
-            );
-            filler(
-                buf,
-                CString::new("hello").unwrap().as_ptr(),
-                ptr::null_mut(),
-                0,
-                yarf::fuse_fill_dir_flags::FUSE_FILL_DIR_ZERO,
-            );
+            match filler {
+                Some(filler_func) => unsafe {
+                    filler_func(
+                        buf,
+                        CString::new(".").unwrap().as_ptr(),
+                        ptr::null_mut(),
+                        0
+                    );
+                    filler_func(
+                        buf,
+                        CString::new("..").unwrap().as_ptr(),
+                        ptr::null_mut(),
+                        0
+                    );
+                    filler_func(
+                        buf,
+                        CString::new("hello").unwrap().as_ptr(),
+                        ptr::null_mut(),
+                        0
+                    );
+                }
+                _ => {}
+            }
             0
         }
+
         _ => libc::ENOENT,
     }
 }
 
-extern "C" fn yarf_open(path: *const c_char, fi: *mut fuse_file_info) -> c_int {
+extern "C" fn yarf_open(path: *const c_char, _fi: *mut fuse_file_info) -> c_int {
     let path_str = unsafe { CStr::from_ptr(path) };
     let path_slice = path_str.to_str().unwrap();
 
@@ -95,9 +101,9 @@ extern "C" fn yarf_open(path: *const c_char, fi: *mut fuse_file_info) -> c_int {
 extern "C" fn yarf_read(
     path: *const c_char,
     buf: *mut c_char,
-    size: usize,
-    offset: off_t,
-    fi: *mut fuse_file_info,
+    _size: usize,
+    _offset: off_t,
+    _fi: *mut fuse_file_info,
 ) -> c_int {
     let path_str = unsafe { CStr::from_ptr(path) };
     let path_slice = path_str.to_str().unwrap();
