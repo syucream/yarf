@@ -28,14 +28,14 @@ extern "C" fn yarf_getattr(path: *const c_char, stbuf: *mut stat) -> c_int {
     match path_slice {
         "/" => {
             unsafe {
-                (*stbuf).st_mode = libc::S_IFDIR | 0755;
+                (*stbuf).st_mode = libc::S_IFDIR | 0o755;
                 (*stbuf).st_nlink = 2;
             }
             0
         }
         HELLO_PATH => {
             unsafe {
-                (*stbuf).st_mode = libc::S_IFREG | 0444;
+                (*stbuf).st_mode = libc::S_IFREG | 0o444;
                 (*stbuf).st_nlink = 1;
                 (*stbuf).st_size = HELLO_CONTENT.len() as i64;
             }
