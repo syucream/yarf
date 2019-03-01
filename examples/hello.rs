@@ -59,21 +59,25 @@ extern "C" fn yarf_readdir(
         "/" => {
             match filler {
                 Some(filler_func) => unsafe {
+                    let current_dir = CString::new(".").unwrap();
+                    let parent_dir = CString::new("..").unwrap();
+                    let hello_file = CString::new("hello").unwrap();
+
                     filler_func(
                         buf,
-                        CString::new(".").unwrap().as_ptr(),
+                        current_dir.as_ptr(),
                         ptr::null_mut(),
                         0
                     );
                     filler_func(
                         buf,
-                        CString::new("..").unwrap().as_ptr(),
+                        parent_dir.as_ptr(),
                         ptr::null_mut(),
                         0
                     );
                     filler_func(
                         buf,
-                        CString::new("hello").unwrap().as_ptr(),
+                        hello_file.as_ptr(),
                         ptr::null_mut(),
                         0
                     );
@@ -111,9 +115,9 @@ extern "C" fn yarf_read(
     match path_slice {
         HELLO_PATH => {
             unsafe {
-                let content_ptr = CString::new(HELLO_CONTENT).unwrap().as_ptr();
+                let content = CString::new(HELLO_CONTENT).unwrap();
                 let content_len = HELLO_CONTENT.len();
-                ptr::copy_nonoverlapping(content_ptr, buf, content_len);
+                ptr::copy_nonoverlapping(content.as_ptr(), buf, content_len);
             }
             0
         }
