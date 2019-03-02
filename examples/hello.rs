@@ -114,12 +114,12 @@ extern "C" fn yarf_read(
 
     match path_slice {
         HELLO_PATH => {
+            let content = CString::new(HELLO_CONTENT).unwrap();
+            let content_len = HELLO_CONTENT.len();
             unsafe {
-                let content = CString::new(HELLO_CONTENT).unwrap();
-                let content_len = HELLO_CONTENT.len();
                 ptr::copy_nonoverlapping(content.as_ptr(), buf, content_len);
             }
-            0
+            content_len as c_int
         }
         _ => -libc::ENOENT,
     }
