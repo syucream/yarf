@@ -1,13 +1,13 @@
 extern crate libc;
 extern crate yarf;
 
-use libc::{size_t, stat};
+use libc::{off_t, size_t, stat};
 use std::ffi::{CStr, CString};
 use std::mem;
-use std::os::raw::{c_char, c_int, c_uint, c_ulong, c_ulonglong, c_void};
+use std::os::raw::{c_char, c_int, c_void};
 use std::ptr;
 use std::ptr::null_mut;
-use yarf::{fuse_conn_info, fuse_file_info, fuse_fill_dir_t, fuse_operations, off_t};
+use yarf::{fuse_conn_info, fuse_file_info, fuse_fill_dir_t, fuse_operations};
 
 const HELLO_PATH: &str = "/hello";
 const HELLO_CONTENT: &str = "hello, fuse!\n";
@@ -164,7 +164,27 @@ fn main() {
         fgetattr: None,
         lock: None,
         utimens: None,
-        bmap: None
+        bmap: None,
+        reserved00: None,
+        reserved01: None,
+        reserved02: None,
+        reserved03: None,
+        reserved04: None,
+        reserved05: None,
+        reserved06: None,
+        reserved07: None,
+        reserved08: None,
+        reserved09: None,
+        reserved10: None,
+        setvolname: None,
+        exchange: None,
+        getxtimes: None,
+        setbkuptime: None,
+        setchgtime: None,
+        setcrtime: None,
+        chflags: None,
+        setattr_x: None,
+        fsetattr_x: None
     };
 
     // args

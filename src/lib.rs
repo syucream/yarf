@@ -1,8 +1,5 @@
 extern crate libc;
 
-#[allow(non_camel_case_types)]
-pub type off_t = ::std::os::raw::c_longlong;
-
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[allow(non_camel_case_types)]
@@ -152,7 +149,7 @@ pub type fuse_fill_dir_t = ::std::option::Option<
         buf: *mut ::std::os::raw::c_void,
         name: *const ::std::os::raw::c_char,
         stbuf: *const ::libc::stat,
-        off: off_t,
+        off: ::libc::off_t,
     ) -> ::std::os::raw::c_int,
 >;
 
@@ -213,6 +210,22 @@ pub type fuse_dirfil_t = ::std::option::Option<
 pub struct utimbuf {
     pub actime: ::libc::time_t,
     pub modtime: ::libc::time_t,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct setattr_x {
+    pub valid: i32,
+    pub mode: ::libc::mode_t,
+    pub uid: ::libc::uid_t,
+    pub gid: ::libc::gid_t,
+    pub size: ::libc::off_t,
+    pub acctime: ::libc::timespec,
+    pub modtime: ::libc::timespec,
+    pub crtime: ::libc::timespec,
+    pub chgtime: ::libc::timespec,
+    pub bkuptime: ::libc::timespec,
+    pub flags: u32,
 }
 
 #[repr(C)]
@@ -329,7 +342,7 @@ pub struct fuse_operations {
     pub truncate: ::std::option::Option<
         unsafe extern "C" fn(
             arg1: *const ::std::os::raw::c_char,
-            arg2: off_t,
+            arg2: ::libc::off_t,
         ) -> ::std::os::raw::c_int,
     >,
 
@@ -374,7 +387,7 @@ pub struct fuse_operations {
             arg1: *const ::std::os::raw::c_char,
             arg2: *mut ::std::os::raw::c_char,
             arg3: usize,
-            arg4: off_t,
+            arg4: ::libc::off_t,
             arg5: *mut fuse_file_info,
         ) -> ::std::os::raw::c_int,
     >,
@@ -391,7 +404,7 @@ pub struct fuse_operations {
             arg1: *const ::std::os::raw::c_char,
             arg2: *const ::std::os::raw::c_char,
             arg3: usize,
-            arg4: off_t,
+            arg4: ::libc::off_t,
             arg5: *mut fuse_file_info,
         ) -> ::std::os::raw::c_int,
     >,
@@ -548,7 +561,7 @@ pub struct fuse_operations {
             arg1: *const ::std::os::raw::c_char,
             arg2: *mut ::std::os::raw::c_void,
             arg3: fuse_fill_dir_t,
-            arg4: off_t,
+            arg4: ::libc::off_t,
             arg5: *mut fuse_file_info,
         ) -> ::std::os::raw::c_int,
     >,
@@ -643,7 +656,7 @@ pub struct fuse_operations {
     pub ftruncate: ::std::option::Option<
         unsafe extern "C" fn(
             arg1: *const ::std::os::raw::c_char,
-            arg2: off_t,
+            arg2: ::libc::off_t,
             arg3: *mut fuse_file_info,
         ) -> ::std::os::raw::c_int,
     >,
@@ -727,6 +740,212 @@ pub struct fuse_operations {
             arg1: *const ::std::os::raw::c_char,
             blocksize: usize,
             idx: *mut u64,
+        ) -> ::std::os::raw::c_int,
+    >,
+
+    pub reserved00: ::std::option::Option<
+        unsafe extern "C" fn(
+            arg1: *mut ::std::os::raw::c_void,
+            arg2: *mut ::std::os::raw::c_void,
+            arg3: *mut ::std::os::raw::c_void,
+            arg4: *mut ::std::os::raw::c_void,
+            arg5: *mut ::std::os::raw::c_void,
+            arg6: *mut ::std::os::raw::c_void,
+            arg7: *mut ::std::os::raw::c_void,
+            arg8: *mut ::std::os::raw::c_void,
+        ) -> ::std::os::raw::c_int,
+    >,
+
+    pub reserved01: ::std::option::Option<
+        unsafe extern "C" fn(
+            arg1: *mut ::std::os::raw::c_void,
+            arg2: *mut ::std::os::raw::c_void,
+            arg3: *mut ::std::os::raw::c_void,
+            arg4: *mut ::std::os::raw::c_void,
+            arg5: *mut ::std::os::raw::c_void,
+            arg6: *mut ::std::os::raw::c_void,
+            arg7: *mut ::std::os::raw::c_void,
+            arg8: *mut ::std::os::raw::c_void,
+        ) -> ::std::os::raw::c_int,
+    >,
+
+    pub reserved02: ::std::option::Option<
+        unsafe extern "C" fn(
+            arg1: *mut ::std::os::raw::c_void,
+            arg2: *mut ::std::os::raw::c_void,
+            arg3: *mut ::std::os::raw::c_void,
+            arg4: *mut ::std::os::raw::c_void,
+            arg5: *mut ::std::os::raw::c_void,
+            arg6: *mut ::std::os::raw::c_void,
+            arg7: *mut ::std::os::raw::c_void,
+            arg8: *mut ::std::os::raw::c_void,
+        ) -> ::std::os::raw::c_int,
+    >,
+
+    pub reserved03: ::std::option::Option<
+        unsafe extern "C" fn(
+            arg1: *mut ::std::os::raw::c_void,
+            arg2: *mut ::std::os::raw::c_void,
+            arg3: *mut ::std::os::raw::c_void,
+            arg4: *mut ::std::os::raw::c_void,
+            arg5: *mut ::std::os::raw::c_void,
+            arg6: *mut ::std::os::raw::c_void,
+            arg7: *mut ::std::os::raw::c_void,
+            arg8: *mut ::std::os::raw::c_void,
+        ) -> ::std::os::raw::c_int,
+    >,
+
+    pub reserved04: ::std::option::Option<
+        unsafe extern "C" fn(
+            arg1: *mut ::std::os::raw::c_void,
+            arg2: *mut ::std::os::raw::c_void,
+            arg3: *mut ::std::os::raw::c_void,
+            arg4: *mut ::std::os::raw::c_void,
+            arg5: *mut ::std::os::raw::c_void,
+            arg6: *mut ::std::os::raw::c_void,
+            arg7: *mut ::std::os::raw::c_void,
+            arg8: *mut ::std::os::raw::c_void,
+        ) -> ::std::os::raw::c_int,
+    >,
+
+    pub reserved05: ::std::option::Option<
+        unsafe extern "C" fn(
+            arg1: *mut ::std::os::raw::c_void,
+            arg2: *mut ::std::os::raw::c_void,
+            arg3: *mut ::std::os::raw::c_void,
+            arg4: *mut ::std::os::raw::c_void,
+            arg5: *mut ::std::os::raw::c_void,
+            arg6: *mut ::std::os::raw::c_void,
+            arg7: *mut ::std::os::raw::c_void,
+            arg8: *mut ::std::os::raw::c_void,
+        ) -> ::std::os::raw::c_int,
+    >,
+
+    pub reserved06: ::std::option::Option<
+        unsafe extern "C" fn(
+            arg1: *mut ::std::os::raw::c_void,
+            arg2: *mut ::std::os::raw::c_void,
+            arg3: *mut ::std::os::raw::c_void,
+            arg4: *mut ::std::os::raw::c_void,
+            arg5: *mut ::std::os::raw::c_void,
+            arg6: *mut ::std::os::raw::c_void,
+            arg7: *mut ::std::os::raw::c_void,
+            arg8: *mut ::std::os::raw::c_void,
+        ) -> ::std::os::raw::c_int,
+    >,
+
+    pub reserved07: ::std::option::Option<
+        unsafe extern "C" fn(
+            arg1: *mut ::std::os::raw::c_void,
+            arg2: *mut ::std::os::raw::c_void,
+            arg3: *mut ::std::os::raw::c_void,
+            arg4: *mut ::std::os::raw::c_void,
+            arg5: *mut ::std::os::raw::c_void,
+            arg6: *mut ::std::os::raw::c_void,
+            arg7: *mut ::std::os::raw::c_void,
+            arg8: *mut ::std::os::raw::c_void,
+        ) -> ::std::os::raw::c_int,
+    >,
+
+    pub reserved08: ::std::option::Option<
+        unsafe extern "C" fn(
+            arg1: *mut ::std::os::raw::c_void,
+            arg2: *mut ::std::os::raw::c_void,
+            arg3: *mut ::std::os::raw::c_void,
+            arg4: *mut ::std::os::raw::c_void,
+            arg5: *mut ::std::os::raw::c_void,
+            arg6: *mut ::std::os::raw::c_void,
+            arg7: *mut ::std::os::raw::c_void,
+            arg8: *mut ::std::os::raw::c_void,
+        ) -> ::std::os::raw::c_int,
+    >,
+
+    pub reserved09: ::std::option::Option<
+        unsafe extern "C" fn(
+            arg1: *mut ::std::os::raw::c_void,
+            arg2: *mut ::std::os::raw::c_void,
+            arg3: *mut ::std::os::raw::c_void,
+            arg4: *mut ::std::os::raw::c_void,
+            arg5: *mut ::std::os::raw::c_void,
+            arg6: *mut ::std::os::raw::c_void,
+            arg7: *mut ::std::os::raw::c_void,
+            arg8: *mut ::std::os::raw::c_void,
+        ) -> ::std::os::raw::c_int,
+    >,
+
+    pub reserved10: ::std::option::Option<
+        unsafe extern "C" fn(
+            arg1: *mut ::std::os::raw::c_void,
+            arg2: *mut ::std::os::raw::c_void,
+            arg3: *mut ::std::os::raw::c_void,
+            arg4: *mut ::std::os::raw::c_void,
+            arg5: *mut ::std::os::raw::c_void,
+            arg6: *mut ::std::os::raw::c_void,
+            arg7: *mut ::std::os::raw::c_void,
+            arg8: *mut ::std::os::raw::c_void,
+        ) -> ::std::os::raw::c_int,
+    >,
+
+    pub setvolname: ::std::option::Option<
+        unsafe extern "C" fn(arg1: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int,
+    >,
+
+    pub exchange: ::std::option::Option<
+        unsafe extern "C" fn(
+            arg1: *const ::std::os::raw::c_char,
+            arg2: *const ::std::os::raw::c_char,
+            arg3: ::std::os::raw::c_ulong,
+        ) -> ::std::os::raw::c_int,
+    >,
+
+    pub getxtimes: ::std::option::Option<
+        unsafe extern "C" fn(
+            arg1: *const ::std::os::raw::c_char,
+            bkuptime: *mut ::libc::timespec,
+            crtime: *mut ::libc::timespec,
+        ) -> ::std::os::raw::c_int,
+    >,
+
+    pub setbkuptime: ::std::option::Option<
+        unsafe extern "C" fn(
+            arg1: *const ::std::os::raw::c_char,
+            tv: *const ::libc::timespec,
+        ) -> ::std::os::raw::c_int,
+    >,
+
+    pub setchgtime: ::std::option::Option<
+        unsafe extern "C" fn(
+            arg1: *const ::std::os::raw::c_char,
+            tv: *const ::libc::timespec,
+        ) -> ::std::os::raw::c_int,
+    >,
+
+    pub setcrtime: ::std::option::Option<
+        unsafe extern "C" fn(
+            arg1: *const ::std::os::raw::c_char,
+            tv: *const ::libc::timespec,
+        ) -> ::std::os::raw::c_int,
+    >,
+
+    pub chflags: ::std::option::Option<
+        unsafe extern "C" fn(
+            arg1: *const ::std::os::raw::c_char,
+            arg2: u32,
+        ) -> ::std::os::raw::c_int,
+    >,
+
+    pub setattr_x: ::std::option::Option<
+        unsafe extern "C" fn(
+            arg1: *const ::std::os::raw::c_char,
+            arg2: *mut setattr_x,
+        ) -> ::std::os::raw::c_int,
+    >,
+
+    pub fsetattr_x: ::std::option::Option<
+        unsafe extern "C" fn(
+            arg1: *const ::std::os::raw::c_char,
+            arg2: *mut setattr_x,
+            arg3: *mut fuse_file_info,
         ) -> ::std::os::raw::c_int,
     >,
 }
