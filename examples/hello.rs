@@ -41,7 +41,7 @@ extern "C" fn yarf_getattr(path: *const c_char, stbuf: *mut stat) -> c_int {
             }
             0
         }
-        _ => -libc::ENOENT
+        _ => -libc::ENOENT,
     }
 }
 
@@ -63,25 +63,10 @@ extern "C" fn yarf_readdir(
                     let parent_dir = CString::new("..").unwrap();
                     let hello_file = CString::new("hello").unwrap();
 
-                    filler_func(
-                        buf,
-                        current_dir.as_ptr(),
-                        ptr::null_mut(),
-                        0
-                    );
-                    filler_func(
-                        buf,
-                        parent_dir.as_ptr(),
-                        ptr::null_mut(),
-                        0
-                    );
-                    filler_func(
-                        buf,
-                        hello_file.as_ptr(),
-                        ptr::null_mut(),
-                        0
-                    );
-                }
+                    filler_func(buf, current_dir.as_ptr(), ptr::null_mut(), 0);
+                    filler_func(buf, parent_dir.as_ptr(), ptr::null_mut(), 0);
+                    filler_func(buf, hello_file.as_ptr(), ptr::null_mut(), 0);
+                },
                 _ => {}
             }
             0
@@ -184,7 +169,7 @@ fn main() {
         setcrtime: None,
         chflags: None,
         setattr_x: None,
-        fsetattr_x: None
+        fsetattr_x: None,
     };
 
     // args

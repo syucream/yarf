@@ -4,8 +4,8 @@ extern crate libc;
 #[derive(Copy, Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[allow(non_camel_case_types)]
 pub struct __BindgenBitfieldUnit<Storage, Align>
-    where
-        Storage: AsRef<[u8]> + AsMut<[u8]>,
+where
+    Storage: AsRef<[u8]> + AsMut<[u8]>,
 {
     storage: Storage,
     align: [Align; 0],
@@ -192,8 +192,10 @@ pub type fuse_opt_proc_t = ::std::option::Option<
 pub struct fuse_dirhandle {
     _unused: [u8; 0],
 }
+
 #[allow(non_camel_case_types)]
 pub type fuse_dirh_t = *mut fuse_dirhandle;
+
 #[allow(non_camel_case_types)]
 pub type fuse_dirfil_t = ::std::option::Option<
     unsafe extern "C" fn(
@@ -205,15 +207,8 @@ pub type fuse_dirfil_t = ::std::option::Option<
 >;
 
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
-#[allow(non_camel_case_types)]
-pub struct utimbuf {
-    pub actime: ::libc::time_t,
-    pub modtime: ::libc::time_t,
-}
-
-#[repr(C)]
 #[derive(Copy, Clone)]
+#[allow(non_camel_case_types)]
 pub struct setattr_x {
     pub valid: i32,
     pub mode: ::libc::mode_t,
@@ -228,7 +223,20 @@ pub struct setattr_x {
     pub flags: u32,
 }
 
+#[doc = " The file system operations:"]
+#[doc = ""]
+#[doc = " Most of these should work very similarly to the well known UNIX"]
+#[doc = " file system operations.  A major exception is that instead of"]
+#[doc = " returning an error in \'errno\', the operation should return the"]
+#[doc = " negated error value (-errno) directly."]
+#[doc = ""]
+#[doc = " All methods are optional, but some are essential for a useful"]
+#[doc = " filesystem (e.g. getattr).  Open, flush, release, fsync, opendir,"]
+#[doc = " releasedir, fsyncdir, access, create, ftruncate, fgetattr, lock,"]
+#[doc = " init and destroy are special purpose methods, without which a full"]
+#[doc = " featured filesystem can still be implemented."]
 #[repr(C)]
+#[derive(Debug, Copy, Clone)]
 #[allow(non_camel_case_types)]
 pub struct fuse_operations {
     #[doc = " Get file attributes."]
@@ -352,7 +360,7 @@ pub struct fuse_operations {
     pub utime: ::std::option::Option<
         unsafe extern "C" fn(
             arg1: *const ::std::os::raw::c_char,
-            arg2: *mut utimbuf,
+            arg2: *mut ::libc::utimbuf,
         ) -> ::std::os::raw::c_int,
     >,
 
@@ -988,4 +996,657 @@ extern "C" {
         opts: *const fuse_opt,
         proc_: fuse_opt_proc_t,
     ) -> ::std::os::raw::c_int;
+
+    #[doc = " Add an option to a comma separated option list"]
+    #[doc = ""]
+    #[doc = " @param opts is a pointer to an option list, may point to a NULL value"]
+    #[doc = " @param opt is the option to add"]
+    #[doc = " @return -1 on allocation error, 0 on success"]
+    #[link_name = "fuse_opt_add_opt"]
+    pub fn fuse_opt_add_opt(
+        opts: *mut *mut ::std::os::raw::c_char,
+        opt: *const ::std::os::raw::c_char,
+    ) -> ::std::os::raw::c_int;
+
+    #[doc = " Add an argument to a NULL terminated argument vector"]
+    #[doc = ""]
+    #[doc = " @param args is the structure containing the current argument list"]
+    #[doc = " @param arg is the new argument to add"]
+    #[doc = " @return -1 on allocation error, 0 on success"]
+    #[link_name = "fuse_opt_add_arg"]
+    pub fn fuse_opt_add_arg(
+        args: *mut fuse_args,
+        arg: *const ::std::os::raw::c_char,
+    ) -> ::std::os::raw::c_int;
+
+    #[doc = " Add an argument at the specified position in a NULL terminated"]
+    #[doc = " argument vector"]
+    #[doc = ""]
+    #[doc = " Adds the argument to the N-th position.  This is useful for adding"]
+    #[doc = " options at the beggining of the array which must not come after the"]
+    #[doc = " special \'--\' option."]
+    #[doc = ""]
+    #[doc = " @param args is the structure containing the current argument list"]
+    #[doc = " @param pos is the position at which to add the argument"]
+    #[doc = " @param arg is the new argument to add"]
+    #[doc = " @return -1 on allocation error, 0 on success"]
+    #[link_name = "fuse_opt_insert_arg"]
+    pub fn fuse_opt_insert_arg(
+        args: *mut fuse_args,
+        pos: ::std::os::raw::c_int,
+        arg: *const ::std::os::raw::c_char,
+    ) -> ::std::os::raw::c_int;
+
+    #[doc = " Free the contents of argument list"]
+    #[doc = ""]
+    #[doc = " The structure itself is not freed"]
+    #[doc = ""]
+    #[doc = " @param args is the structure containing the argument list"]
+    #[link_name = "fuse_opt_free_args"]
+    pub fn fuse_opt_free_args(args: *mut fuse_args);
+
+    #[doc = " Check if an option matches"]
+    #[doc = ""]
+    #[doc = " @param opts is the option description array"]
+    #[doc = " @param opt is the option to match"]
+    #[doc = " @return 1 if a match is found, 0 if not"]
+    #[link_name = "fuse_opt_match"]
+    pub fn fuse_opt_match(
+        opts: *const fuse_opt,
+        opt: *const ::std::os::raw::c_char,
+    ) -> ::std::os::raw::c_int;
+}
+
+#[test]
+fn bindgen_test_layout_fuse_operations() {
+    assert_eq!(
+        ::std::mem::size_of::<fuse_operations>(),
+        464usize,
+        concat!("Size of: ", stringify!(fuse_operations))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<fuse_operations>(),
+        8usize,
+        concat!("Alignment of ", stringify!(fuse_operations))
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).getattr as *const _ as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(getattr)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).readlink as *const _ as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(readlink)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).getdir as *const _ as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(getdir)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).mknod as *const _ as usize },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(mknod)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).mkdir as *const _ as usize },
+        32usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(mkdir)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).unlink as *const _ as usize },
+        40usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(unlink)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).rmdir as *const _ as usize },
+        48usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(rmdir)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).symlink as *const _ as usize },
+        56usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(symlink)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).rename as *const _ as usize },
+        64usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(rename)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).link as *const _ as usize },
+        72usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(link)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).chmod as *const _ as usize },
+        80usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(chmod)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).chown as *const _ as usize },
+        88usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(chown)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).truncate as *const _ as usize },
+        96usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(truncate)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).utime as *const _ as usize },
+        104usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(utime)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).open as *const _ as usize },
+        112usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(open)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).read as *const _ as usize },
+        120usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(read)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).write as *const _ as usize },
+        128usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(write)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).statfs as *const _ as usize },
+        136usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(statfs)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).flush as *const _ as usize },
+        144usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(flush)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).release as *const _ as usize },
+        152usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(release)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).fsync as *const _ as usize },
+        160usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(fsync)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).setxattr as *const _ as usize },
+        168usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(setxattr)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).getxattr as *const _ as usize },
+        176usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(getxattr)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).listxattr as *const _ as usize },
+        184usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(listxattr)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).removexattr as *const _ as usize },
+        192usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(removexattr)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).opendir as *const _ as usize },
+        200usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(opendir)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).readdir as *const _ as usize },
+        208usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(readdir)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).releasedir as *const _ as usize },
+        216usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(releasedir)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).fsyncdir as *const _ as usize },
+        224usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(fsyncdir)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).init as *const _ as usize },
+        232usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(init)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).destroy as *const _ as usize },
+        240usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(destroy)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).access as *const _ as usize },
+        248usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(access)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).create as *const _ as usize },
+        256usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(create)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).ftruncate as *const _ as usize },
+        264usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(ftruncate)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).fgetattr as *const _ as usize },
+        272usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(fgetattr)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).lock as *const _ as usize },
+        280usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(lock)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).utimens as *const _ as usize },
+        288usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(utimens)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).bmap as *const _ as usize },
+        296usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(bmap)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).reserved00 as *const _ as usize },
+        304usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(reserved00)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).reserved01 as *const _ as usize },
+        312usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(reserved01)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).reserved02 as *const _ as usize },
+        320usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(reserved02)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).reserved03 as *const _ as usize },
+        328usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(reserved03)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).reserved04 as *const _ as usize },
+        336usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(reserved04)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).reserved05 as *const _ as usize },
+        344usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(reserved05)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).reserved06 as *const _ as usize },
+        352usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(reserved06)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).reserved07 as *const _ as usize },
+        360usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(reserved07)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).reserved08 as *const _ as usize },
+        368usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(reserved08)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).reserved09 as *const _ as usize },
+        376usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(reserved09)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).reserved10 as *const _ as usize },
+        384usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(reserved10)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).setvolname as *const _ as usize },
+        392usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(setvolname)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).exchange as *const _ as usize },
+        400usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(exchange)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).getxtimes as *const _ as usize },
+        408usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(getxtimes)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).setbkuptime as *const _ as usize },
+        416usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(setbkuptime)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).setchgtime as *const _ as usize },
+        424usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(setchgtime)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).setcrtime as *const _ as usize },
+        432usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(setcrtime)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).chflags as *const _ as usize },
+        440usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(chflags)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).setattr_x as *const _ as usize },
+        448usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(setattr_x)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_operations>())).fsetattr_x as *const _ as usize },
+        456usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_operations),
+            "::",
+            stringify!(fsetattr_x)
+        )
+    );
 }
