@@ -1,2 +1,2 @@
 [workspace]
-members = ["yarf-sys"]
+members = ["yarf-sys", "yarf"]
