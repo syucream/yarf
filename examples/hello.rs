@@ -1,7 +1,7 @@
 extern crate libc;
 extern crate yarf;
 
-use libc::{off_t, size_t, stat};
+use libc::{off_t, stat};
 use std::ffi::{CStr, CString};
 use std::mem;
 use std::os::raw::{c_char, c_int, c_void};
@@ -86,7 +86,6 @@ extern "C" fn yarf_open(path: *const c_char, _fi: *mut fuse_file_info) -> c_int 
     }
 }
 
-// FIXME something wrong
 extern "C" fn yarf_read(
     path: *const c_char,
     buf: *mut c_char,
@@ -182,8 +181,7 @@ fn main() {
         .collect::<Vec<*const c_char>>();
 
     let pdata: *mut c_void = ptr::null_mut();
-    // TODO use side_of
-    let opsize: size_t = mem::size_of_val(&ops);
+    let opsize = mem::size_of::<fuse_operations>();
     unsafe {
         yarf::fuse_main_real(
             c_args.len() as c_int,

@@ -1,3 +1,8 @@
+/*
+ * A libfuse highlevel API Rust bindings.
+ * It supports only libfuse 2.6.x+
+ *
+ */
 extern crate libc;
 
 #[repr(C)]
