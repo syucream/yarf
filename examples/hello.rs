@@ -10,7 +10,7 @@ use std::ptr::null_mut;
 use yarf::{fuse_conn_info, fuse_file_info, fuse_fill_dir_t, fuse_operations, off_t};
 
 const HELLO_PATH: &str = "/hello";
-const HELLO_CONTENT: &str = "hello, fuse!";
+const HELLO_CONTENT: &str = "hello, fuse!\n";
 
 extern "C" fn yarf_init(_conn: *mut fuse_conn_info) -> *mut ::std::os::raw::c_void {
     null_mut() as *mut c_void
@@ -127,11 +127,44 @@ extern "C" fn yarf_read(
 
 fn main() {
     let ops = fuse_operations {
-        init: Some(yarf_init),
         getattr: Some(yarf_getattr),
-        readdir: Some(yarf_readdir),
+        readlink: None,
+        getdir: None,
+        mknod: None,
+        mkdir: None,
+        unlink: None,
+        rmdir: None,
+        symlink: None,
+        rename: None,
+        link: None,
+        chmod: None,
+        chown: None,
+        truncate: None,
+        utime: None,
         open: Some(yarf_open),
         read: Some(yarf_read),
+        write: None,
+        statfs: None,
+        flush: None,
+        release: None,
+        fsync: None,
+        setxattr: None,
+        getxattr: None,
+        listxattr: None,
+        removexattr: None,
+        opendir: None,
+        readdir: Some(yarf_readdir),
+        releasedir: None,
+        fsyncdir: None,
+        init: Some(yarf_init),
+        destroy: None,
+        access: None,
+        create: None,
+        ftruncate: None,
+        fgetattr: None,
+        lock: None,
+        utimens: None,
+        bmap: None
     };
 
     // args
@@ -144,6 +177,7 @@ fn main() {
         .collect::<Vec<*const c_char>>();
 
     let pdata: *mut c_void = ptr::null_mut();
+    // TODO use side_of
     let opsize: size_t = mem::size_of_val(&ops);
     unsafe {
         yarf::fuse_main_real(
