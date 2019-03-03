@@ -1,5 +1,5 @@
 extern crate libc;
-extern crate yarf;
+extern crate yarf_sys;
 
 use libc::{off_t, stat};
 use std::ffi::{CStr, CString};
@@ -7,7 +7,7 @@ use std::mem;
 use std::os::raw::{c_char, c_int, c_void};
 use std::ptr;
 use std::ptr::null_mut;
-use yarf::{fuse_conn_info, fuse_file_info, fuse_fill_dir_t, fuse_operations};
+use yarf_sys::{fuse_conn_info, fuse_file_info, fuse_fill_dir_t, fuse_operations};
 
 const HELLO_PATH: &str = "/hello";
 const HELLO_CONTENT: &str = "hello, fuse!\n";
@@ -183,7 +183,7 @@ fn main() {
     let pdata: *mut c_void = ptr::null_mut();
     let opsize = mem::size_of::<fuse_operations>();
     unsafe {
-        yarf::fuse_main_real(
+        yarf_sys::fuse_main_real(
             c_args.len() as c_int,
             c_args.as_ptr() as *mut *mut c_char,
             &ops,
