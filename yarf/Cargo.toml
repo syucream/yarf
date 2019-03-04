@@ -9,3 +9,6 @@ description = "A yet another rust-fuse; highlevel package"
 libc = "0.2.46"
 yarf-sys = { path = "../yarf-sys", version = "0.0.1" }
 
+[[bin]]
+name = "hello"
+path = "examples/hello.rs"

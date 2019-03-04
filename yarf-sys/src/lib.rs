@@ -228,6 +228,33 @@ pub struct setattr_x {
     pub flags: u32,
 }
 
+#[doc = " Handle for a FUSE filesystem"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct fuse {
+    _unused: [u8; 0],
+}
+
+#[doc = " Extra context that may be needed by some filesystems"]
+#[doc = ""]
+#[doc = " The uid, gid and pid fields are not filled in case of a writepage"]
+#[doc = " operation."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+#[allow(non_camel_case_types)]
+pub struct fuse_context {
+    #[doc = " Pointer to the fuse object"]
+    pub fuse: *mut fuse,
+    #[doc = " User ID of the calling process"]
+    pub uid: ::libc::uid_t,
+    #[doc = " Group ID of the calling process"]
+    pub gid: ::libc::gid_t,
+    #[doc = " Thread ID of the calling process"]
+    pub pid: ::libc::pid_t,
+    #[doc = " Private filesystem data"]
+    pub private_data: *mut ::std::os::raw::c_void,
+}
+
 #[doc = " The file system operations:"]
 #[doc = ""]
 #[doc = " Most of these should work very similarly to the well known UNIX"]
@@ -976,6 +1003,15 @@ extern "C" {
         user_data: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int;
 
+    #[doc = " Get the current context"]
+    #[doc = ""]
+    #[doc = " The context is only valid for the duration of a filesystem"]
+    #[doc = " operation, and thus must not be stored and used later."]
+    #[doc = ""]
+    #[doc = " @return the context"]
+    #[link_name = "fuse_get_context"]
+    pub fn fuse_get_context() -> *mut fuse_context;
+
     #[doc = " Option parsing function"]
     #[doc = ""]
     #[doc = " If \'args\' was returned from a previous call to fuse_opt_parse() or"]
@@ -1062,6 +1098,69 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 
+#[test]
+fn bindgen_test_layout_fuse_context() {
+    assert_eq!(
+        ::std::mem::size_of::<fuse_context>(),
+        32usize,
+        concat!("Size of: ", stringify!(fuse_context))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<fuse_context>(),
+        8usize,
+        concat!("Alignment of ", stringify!(fuse_context))
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_context>())).fuse as *const _ as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_context),
+            "::",
+            stringify!(fuse)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_context>())).uid as *const _ as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_context),
+            "::",
+            stringify!(uid)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_context>())).gid as *const _ as usize },
+        12usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_context),
+            "::",
+            stringify!(gid)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_context>())).pid as *const _ as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_context),
+            "::",
+            stringify!(pid)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<fuse_context>())).private_data as *const _ as usize },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(fuse_context),
+            "::",
+            stringify!(private_data)
+        )
+    );
+}
 #[test]
 fn bindgen_test_layout_fuse_operations() {
     assert_eq!(

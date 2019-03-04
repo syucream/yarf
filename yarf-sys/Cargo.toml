@@ -13,5 +13,5 @@ pkg-config = "0.3"
 libc = "0.2.46"
 
 [[bin]]
-name = "hello"
+name = "hello_ll"
 path = "examples/hello.rs"

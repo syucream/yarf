@@ -10,26 +10,25 @@ use libc::{off_t, stat};
 use std::ffi::{CStr, CString};
 use std::mem;
 use std::os::raw::{c_char, c_int, c_void};
-use std::cell::RefCell;
 
 pub type FuseConnectionInfo = ::yarf_sys::fuse_conn_info;
 pub type FuseFileInfo = ::yarf_sys::fuse_file_info;
 pub type FuseFillDir = ::yarf_sys::fuse_fill_dir_t;
 pub type FuseOperations = ::yarf_sys::fuse_operations;
 
-thread_local!(static yarfOps: RefCell<Option<FileSystem>> = RefCell::New(None));
+extern "C" fn yarf_getattr_proxy(path: *const c_char, stbuf: *mut stat) -> c_int {
+    let ops = unsafe {
+        let ctx = yarf_sys::fuse_get_context();
+        let opsbox = (*ctx).private_data as *mut Box<FileSystem>;
 
-extern "C" fn yarf_getattr(path: *const c_char, stbuf: *mut stat) -> c_int {
-    yarfOps.with(|ops_opt| {
-        match ops_opt {
-            Some(ops) => {
-                ops.getattr() as c_int
-            }
-            _ => -libc::EIO
-        }
-    });
+        opsbox.as_ref().unwrap()
+    };
+    let rpath = to_rust_str(path);
+
+    ops.getattr(rpath, stbuf) as c_int
 }
 
+// TODO more callbacks
 /*
 extern "C" fn yarf_readdir(
     path: *const c_char,
@@ -53,21 +52,33 @@ extern "C" fn yarf_read(
 }
 */
 
+fn to_rust_str(cpath: *const c_char) -> String {
+    let path_cstr = unsafe { CStr::from_ptr(cpath) };
+    let path_str = path_cstr.to_str().unwrap();
+
+    return String::from(path_str);
+}
+
 pub trait FileSystem {
+    fn getattr(&self, _path: String, _stbuf: *mut stat) -> i64 {
+        -libc::EIO as i64
+    }
+
+    // TODO more methods
+
     /*
-    fn getattr(&self, path: &str, fi: FuseFileInfo) -> i64;
+    fn readdir(&self, path: String, fi: FuseFileInfo) -> i64;
 
-    fn readdir(&self, path: &str, stbuf: stat) -> i64;
+    fn open(&self, path: String, filler: FuseFillDir, offset: off_t, fi: *mut FuseFillDir) -> i64;
 
-    fn open(&self, path: &str, filler: FuseFillDir, offset: off_t, fi: *mut FuseFillDir) -> i64;
-
-    fn read(&self, path: &str, buf: *mut c_char, size: usize, offset: off_t, fi: *mut FuseFillDir) -> i64;
+    fn read(&self, path: String, buf: *mut c_char, size: usize, offset: off_t, fi: *mut FuseFillDir) -> i64;
     */
 }
 
-pub fn YarfInit(fs: &FileSystem) -> i64 {
+pub fn yarf_main(fs: Box<FileSystem>) -> i64 {
     let ops = FuseOperations {
-        getattr: Some(yarf_getattr),
+        // TODO more callbacks
+        getattr: Some(yarf_getattr_proxy),
         readlink: None,
         getdir: None,
         mknod: None,
@@ -126,4 +137,29 @@ pub fn YarfInit(fs: &FileSystem) -> i64 {
         setattr_x: None,
         fsetattr_x: None,
     };
+
+    // args
+    let args = std::env::args()
+        .map(|arg| CString::new(arg).unwrap())
+        .collect::<Vec<CString>>()
+        .iter()
+        .map(|arg| arg.as_ptr())
+        .collect::<Vec<*const c_char>>();
+
+    let fstmp = Box::new(fs);
+    let fsptr = Box::into_raw(fstmp) as *mut Box<FileSystem> as *mut c_void;
+    let opsize = mem::size_of::<FuseOperations>();
+
+    // call fuse_main
+    unsafe {
+        yarf_sys::fuse_main_real(
+            args.len() as c_int,
+            args.as_ptr() as *mut *mut c_char,
+            &ops,
+            opsize,
+            fsptr,
+        )
+    };
+
+    0
 }
