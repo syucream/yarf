@@ -17,41 +17,48 @@ pub type FuseFillDir = ::yarf_sys::fuse_fill_dir_t;
 pub type FuseOperations = ::yarf_sys::fuse_operations;
 
 extern "C" fn yarf_getattr_proxy(path: *const c_char, stbuf: *mut stat) -> c_int {
-    let ops = unsafe {
-        let ctx = yarf_sys::fuse_get_context();
-        let opsbox = (*ctx).private_data as *mut Box<FileSystem>;
-
-        opsbox.as_ref().unwrap()
-    };
+    let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
 
-    ops.getattr(rpath, stbuf) as c_int
+    ops.getattr(rpath, stbuf)
 }
 
-// TODO more callbacks
-/*
-extern "C" fn yarf_readdir(
+extern "C" fn yarf_readdir_proxy(
     path: *const c_char,
     buf: *mut c_void,
     filler: FuseFillDir,
-    _offset: off_t,
-    _fi: *mut FuseFillDir,
+    offset: off_t,
+    fi: *mut FuseFileInfo,
 ) -> c_int {
+    let ops = unsafe { get_filesystem() };
+    let rpath = to_rust_str(path);
+
+    ops.readdir(rpath, buf, filler, offset, fi)
 }
 
-extern "C" fn yarf_open(path: *const c_char, _fi: *mut FuseFileInfo) -> c_int {
+extern "C" fn yarf_open_proxy(path: *const c_char, fi: *mut FuseFileInfo) -> c_int {
+    let ops = unsafe { get_filesystem() };
+    let rpath = to_rust_str(path);
+
+    ops.open(rpath, fi)
 }
 
-extern "C" fn yarf_read(
+extern "C" fn yarf_read_proxy(
     path: *const c_char,
     buf: *mut c_char,
-    _size: usize,
-    _offset: off_t,
-    _fi: *mut FuseFileInfo,
+    size: usize,
+    offset: off_t,
+    fi: *mut FuseFileInfo,
 ) -> c_int {
-}
-*/
+    let ops = unsafe { get_filesystem() };
+    let rpath = to_rust_str(path);
 
+    ops.read(rpath, buf, size, offset, fi)
+}
+
+// TODO more callbacks
+
+// Convert c_char to String
 fn to_rust_str(cpath: *const c_char) -> String {
     let path_cstr = unsafe { CStr::from_ptr(cpath) };
     let path_str = path_cstr.to_str().unwrap();
@@ -59,20 +66,43 @@ fn to_rust_str(cpath: *const c_char) -> String {
     return String::from(path_str);
 }
 
+// Get FileSystem trait via fuse_context
+unsafe fn get_filesystem() -> Box<FileSystem> {
+    let ctx = yarf_sys::fuse_get_context();
+    let opsbox = (*ctx).private_data as *mut Box<FileSystem>;
+    opsbox.read()
+}
+
 pub trait FileSystem {
-    fn getattr(&self, _path: String, _stbuf: *mut stat) -> i64 {
-        -libc::EIO as i64
+    fn getattr(&self, _path: String, _stbuf: *mut stat) -> c_int {
+        -libc::EIO
     }
 
-    // TODO more methods
+    fn readdir(
+        &self,
+        _path: String,
+        _buf: *mut c_void,
+        _filler: FuseFillDir,
+        _offset: off_t,
+        _fi: *mut FuseFileInfo,
+    ) -> c_int {
+        -libc::EIO
+    }
 
-    /*
-    fn readdir(&self, path: String, fi: FuseFileInfo) -> i64;
+    fn open(&self, _path: String, _fi: *mut FuseFileInfo) -> c_int {
+        -libc::EIO
+    }
 
-    fn open(&self, path: String, filler: FuseFillDir, offset: off_t, fi: *mut FuseFillDir) -> i64;
-
-    fn read(&self, path: String, buf: *mut c_char, size: usize, offset: off_t, fi: *mut FuseFillDir) -> i64;
-    */
+    fn read(
+        &self,
+        _path: String,
+        _buf: *mut c_char,
+        _size: usize,
+        _offset: off_t,
+        _fi: *mut FuseFileInfo,
+    ) -> c_int {
+        -libc::EIO
+    }
 }
 
 pub fn yarf_main(fs: Box<FileSystem>) -> i64 {
@@ -92,8 +122,8 @@ pub fn yarf_main(fs: Box<FileSystem>) -> i64 {
         chown: None,
         truncate: None,
         utime: None,
-        open: None,
-        read: None,
+        open: Some(yarf_open_proxy),
+        read: Some(yarf_read_proxy),
         write: None,
         statfs: None,
         flush: None,
@@ -104,10 +134,10 @@ pub fn yarf_main(fs: Box<FileSystem>) -> i64 {
         listxattr: None,
         removexattr: None,
         opendir: None,
-        readdir: None,
+        readdir: Some(yarf_readdir_proxy),
         releasedir: None,
         fsyncdir: None,
-        init: None,
+        init: None, // Unsupported because it overwrites private_data used to passing Rust value
         destroy: None,
         access: None,
         create: None,
@@ -138,10 +168,11 @@ pub fn yarf_main(fs: Box<FileSystem>) -> i64 {
         fsetattr_x: None,
     };
 
-    // args
+    // get CLI args
     let args = std::env::args()
         .map(|arg| CString::new(arg).unwrap())
-        .collect::<Vec<CString>>()
+        .collect::<Vec<CString>>();
+    let c_args = args
         .iter()
         .map(|arg| arg.as_ptr())
         .collect::<Vec<*const c_char>>();
@@ -153,8 +184,8 @@ pub fn yarf_main(fs: Box<FileSystem>) -> i64 {
     // call fuse_main
     unsafe {
         yarf_sys::fuse_main_real(
-            args.len() as c_int,
-            args.as_ptr() as *mut *mut c_char,
+            c_args.len() as c_int,
+            c_args.as_ptr() as *mut *mut c_char,
             &ops,
             opsize,
             fsptr,
