@@ -3,7 +3,7 @@ name = "yarf-sys"
 version = "0.0.1"
 authors = ["Ryo Okubo <syucream1031@gmail.com>"]
 license = "MIT"
-description = "A yet another rust-fuse; sys package"
+description = "An yet another rust-fuse, focuses on just only libfuse highlevel API binding ; sys crate"
 build = "build.rs"
 
 [build-dependencies]
