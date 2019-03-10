@@ -3,37 +3,29 @@ extern crate yarf;
 
 use libc::{off_t, stat};
 use std::ffi::CString;
-use std::mem;
 use std::os::raw::{c_char, c_int, c_void};
 use std::ptr;
 use yarf::{FileSystem, FuseFileInfo, FuseFillDir};
 
 const HELLO_PATH: &str = "/hello";
-const HELLO_CONTENT: &str = "hello, fuse!\n";
+const HELLO_CONTENT: &str = "Hello, World!\n";
 
 struct HelloFS;
 
 impl FileSystem for HelloFS {
-    fn getattr(&self, path: String, stbuf: *mut stat) -> c_int {
-        // zero fill
-        unsafe {
-            libc::memset(stbuf as *mut c_void, 0, mem::size_of_val(&stbuf));
-        }
-
+    fn getattr(&self, path: String, stbuf: Option<&mut stat>) -> c_int {
         match path.as_str() {
             "/" => {
-                unsafe {
-                    (*stbuf).st_mode = libc::S_IFDIR | 0o755;
-                    (*stbuf).st_nlink = 2;
-                }
+                let mut st = stbuf.unwrap();
+                st.st_mode = libc::S_IFDIR | 0o755;
+                st.st_nlink = 2;
                 0
             }
             HELLO_PATH => {
-                unsafe {
-                    (*stbuf).st_mode = libc::S_IFREG | 0o444;
-                    (*stbuf).st_nlink = 1;
-                    (*stbuf).st_size = (HELLO_CONTENT.len() as c_int).into()
-                }
+                let mut st = stbuf.unwrap();
+                st.st_mode = libc::S_IFREG | 0o444;
+                st.st_nlink = 1;
+                st.st_size = (HELLO_CONTENT.len() as c_int).into();
                 0
             }
             _ => -libc::ENOENT,

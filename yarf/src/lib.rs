@@ -21,7 +21,7 @@ pub type FuseOperations = ::yarf_sys::fuse_operations;
 #[doc = "A filesystem on FUSE"]
 pub trait FileSystem {
     #[doc = " Get file attributes."]
-    fn getattr(&self, _path: String, _stbuf: *mut stat) -> c_int {
+    fn getattr(&self, _path: String, _stbuf: Option<&mut stat>) -> c_int {
         -libc::ENOSYS
     }
 
@@ -280,7 +280,8 @@ pub fn yarf_main(fs: Box<FileSystem>) -> i64 {
         open: Some(open_proxy),
         read: Some(read_proxy),
         write: Some(write_proxy),
-        statfs: Some(statfs_proxy),
+        statfs: None,
+        // statfs: Some(statfs_proxy),
         flush: Some(flush_proxy),
         release: Some(release_proxy),
         fsync: Some(fsync_proxy),
@@ -288,7 +289,8 @@ pub fn yarf_main(fs: Box<FileSystem>) -> i64 {
         getxattr: Some(getxattr_proxy),
         listxattr: Some(listxattr_proxy),
         removexattr: Some(removexattr_proxy),
-        opendir: Some(opendir_proxy),
+        opendir: None,
+        // opendir: Some(opendir_proxy),
         readdir: Some(readdir_proxy),
         releasedir: Some(releasedir_proxy),
         fsyncdir: Some(fsyncdir_proxy),
@@ -358,7 +360,13 @@ extern "C" fn getattr_proxy(path: *const c_char, stbuf: *mut stat) -> c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
 
-    ops.getattr(rpath, stbuf)
+    // Trust libfuse not to pass invalid pointer
+    let stbuf_ref = unsafe {
+        libc::memset(stbuf as *mut c_void, 0, mem::size_of_val(&stbuf));
+        stbuf.as_mut()
+    };
+
+    ops.getattr(rpath, stbuf_ref)
 }
 
 extern "C" fn readlink_proxy(
