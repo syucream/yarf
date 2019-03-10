@@ -96,7 +96,7 @@ pub trait FileSystem {
 
     #[doc = " File open operation"]
     fn open(&self, _path: String, _fi: Option<&mut FuseFileInfo>) -> c_int {
-        -libc::ENOSYS
+        0
     }
 
     #[doc = " Read data from an open file"]
@@ -125,7 +125,7 @@ pub trait FileSystem {
 
     #[doc = " Get file system statistics"]
     fn statfs(&self, _path: String, _arg2: *mut ::libc::statvfs) -> c_int {
-        -libc::ENOSYS
+        0
     }
 
     #[doc = " Possibly flush cached data"]
@@ -135,7 +135,7 @@ pub trait FileSystem {
 
     #[doc = " Release an open file"]
     fn release(&self, _path: String, _fi: Option<&mut FuseFileInfo>) -> c_int {
-        -libc::ENOSYS
+        0
     }
 
     #[doc = " Synchronize file contents"]
@@ -183,7 +183,7 @@ pub trait FileSystem {
 
     #[doc = " Open directory"]
     fn opendir(&self, _path: String, _fi: Option<&mut FuseFileInfo>) -> c_int {
-        -libc::ENOSYS
+        0
     }
 
     #[doc = " Read directory"]
@@ -200,7 +200,7 @@ pub trait FileSystem {
 
     #[doc = " Release directory"]
     fn releasedir(&self, _path: String, _fi: Option<&mut FuseFileInfo>) -> c_int {
-        -libc::ENOSYS
+        0
     }
 
     #[doc = " Synchronize directory contents"]
@@ -300,8 +300,7 @@ pub fn yarf_main(fs: Box<FileSystem>) -> i64 {
         open: Some(open_proxy),
         read: Some(read_proxy),
         write: Some(write_proxy),
-        statfs: None,
-        // statfs: Some(statfs_proxy),
+        statfs: Some(statfs_proxy),
         flush: Some(flush_proxy),
         release: Some(release_proxy),
         fsync: Some(fsync_proxy),
@@ -309,8 +308,7 @@ pub fn yarf_main(fs: Box<FileSystem>) -> i64 {
         getxattr: Some(getxattr_proxy),
         listxattr: Some(listxattr_proxy),
         removexattr: Some(removexattr_proxy),
-        opendir: None,
-        // opendir: Some(opendir_proxy),
+        opendir: Some(opendir_proxy),
         readdir: Some(readdir_proxy),
         releasedir: Some(releasedir_proxy),
         fsyncdir: Some(fsyncdir_proxy),
