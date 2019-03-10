@@ -32,7 +32,7 @@ impl FileSystem for HelloFS {
         }
     }
 
-    fn open(&self, path: String, _fi: *mut FuseFileInfo) -> c_int {
+    fn open(&self, path: String, _fi: Option<&mut FuseFileInfo>) -> c_int {
         match path.as_str() {
             HELLO_PATH => 0,
             _ => -libc::ENOENT,
@@ -45,7 +45,7 @@ impl FileSystem for HelloFS {
         buf: *mut c_char,
         _size: usize,
         _offset: off_t,
-        _fi: *mut FuseFileInfo,
+        _fi: Option<&mut FuseFileInfo>,
     ) -> c_int {
         match path.as_str() {
             HELLO_PATH => {
@@ -66,7 +66,7 @@ impl FileSystem for HelloFS {
         buf: *mut c_void,
         filler: FuseFillDir,
         _offset: off_t,
-        _fi: *mut FuseFileInfo,
+        _fi: Option<&mut FuseFileInfo>,
     ) -> c_int {
         match path.as_str() {
             "/" => {

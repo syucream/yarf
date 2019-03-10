@@ -95,7 +95,7 @@ pub trait FileSystem {
     }
 
     #[doc = " File open operation"]
-    fn open(&self, _path: String, _fi: *mut FuseFileInfo) -> c_int {
+    fn open(&self, _path: String, _fi: Option<&mut FuseFileInfo>) -> c_int {
         -libc::ENOSYS
     }
 
@@ -106,7 +106,7 @@ pub trait FileSystem {
         _buf: *mut c_char,
         _size: usize,
         _offset: off_t,
-        _fi: *mut FuseFileInfo,
+        _fi: Option<&mut FuseFileInfo>,
     ) -> c_int {
         -libc::ENOSYS
     }
@@ -118,7 +118,7 @@ pub trait FileSystem {
         _arg2: *const ::std::os::raw::c_char,
         _arg3: usize,
         _arg4: ::libc::off_t,
-        _fi: *mut FuseFileInfo,
+        _fi: Option<&mut FuseFileInfo>,
     ) -> c_int {
         -libc::ENOSYS
     }
@@ -129,17 +129,22 @@ pub trait FileSystem {
     }
 
     #[doc = " Possibly flush cached data"]
-    fn flush(&self, _path: String, _fi: *mut FuseFileInfo) -> c_int {
+    fn flush(&self, _path: String, _fi: Option<&mut FuseFileInfo>) -> c_int {
         -libc::ENOSYS
     }
 
     #[doc = " Release an open file"]
-    fn release(&self, _path: String, _fi: *mut FuseFileInfo) -> c_int {
+    fn release(&self, _path: String, _fi: Option<&mut FuseFileInfo>) -> c_int {
         -libc::ENOSYS
     }
 
     #[doc = " Synchronize file contents"]
-    fn fsync(&self, _path: String, _arg2: ::std::os::raw::c_int, _fi: *mut FuseFileInfo) -> c_int {
+    fn fsync(
+        &self,
+        _path: String,
+        _arg2: ::std::os::raw::c_int,
+        _fi: Option<&mut FuseFileInfo>,
+    ) -> c_int {
         -libc::ENOSYS
     }
 
@@ -177,7 +182,7 @@ pub trait FileSystem {
     }
 
     #[doc = " Open directory"]
-    fn opendir(&self, _path: String, _fi: *mut FuseFileInfo) -> c_int {
+    fn opendir(&self, _path: String, _fi: Option<&mut FuseFileInfo>) -> c_int {
         -libc::ENOSYS
     }
 
@@ -188,13 +193,13 @@ pub trait FileSystem {
         _buf: *mut c_void,
         _filler: FuseFillDir,
         _offset: off_t,
-        _fi: *mut FuseFileInfo,
+        _fi: Option<&mut FuseFileInfo>,
     ) -> c_int {
         -libc::ENOSYS
     }
 
     #[doc = " Release directory"]
-    fn releasedir(&self, _path: String, _fi: *mut FuseFileInfo) -> c_int {
+    fn releasedir(&self, _path: String, _fi: Option<&mut FuseFileInfo>) -> c_int {
         -libc::ENOSYS
     }
 
@@ -203,7 +208,7 @@ pub trait FileSystem {
         &self,
         _path: String,
         _arg2: ::std::os::raw::c_int,
-        _fi: *mut FuseFileInfo,
+        _fi: Option<&mut FuseFileInfo>,
     ) -> c_int {
         -libc::ENOSYS
     }
@@ -224,17 +229,32 @@ pub trait FileSystem {
     }
 
     #[doc = " Create and open a file"]
-    fn create(&self, _path: String, _arg2: ::libc::mode_t, _fi: *mut FuseFileInfo) -> c_int {
+    fn create(
+        &self,
+        _path: String,
+        _arg2: ::libc::mode_t,
+        _fi: Option<&mut FuseFileInfo>,
+    ) -> c_int {
         -libc::ENOSYS
     }
 
     #[doc = " Change the size of an open file"]
-    fn ftruncate(&self, _path: String, _arg2: ::libc::off_t, _fi: *mut FuseFileInfo) -> c_int {
+    fn ftruncate(
+        &self,
+        _path: String,
+        _arg2: ::libc::off_t,
+        _fi: Option<&mut FuseFileInfo>,
+    ) -> c_int {
         -libc::ENOSYS
     }
 
     #[doc = " Get attributes from an open file"]
-    fn fgetattr(&self, _path: String, _stbuf: *mut ::libc::stat, _fi: *mut FuseFileInfo) -> c_int {
+    fn fgetattr(
+        &self,
+        _path: String,
+        _stbuf: *mut ::libc::stat,
+        _fi: Option<&mut FuseFileInfo>,
+    ) -> c_int {
         -libc::ENOSYS
     }
 
@@ -242,7 +262,7 @@ pub trait FileSystem {
     fn lock(
         &self,
         _path: String,
-        _arg2: *mut FuseFileInfo,
+        _arg2: Option<&mut FuseFileInfo>,
         _cmd: ::std::os::raw::c_int,
         _arg3: *mut ::libc::flock,
     ) -> c_int {
@@ -500,8 +520,9 @@ extern "C" fn utime_proxy(
 extern "C" fn open_proxy(path: *const c_char, fi: *mut FuseFileInfo) -> c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let fi_ref = unsafe { fi.as_mut() };
 
-    ops.open(rpath, fi)
+    ops.open(rpath, fi_ref)
 }
 
 extern "C" fn read_proxy(
@@ -513,8 +534,9 @@ extern "C" fn read_proxy(
 ) -> c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let fi_ref = unsafe { fi.as_mut() };
 
-    ops.read(rpath, buf, size, offset, fi)
+    ops.read(rpath, buf, size, offset, fi_ref)
 }
 
 extern "C" fn write_proxy(
@@ -526,8 +548,9 @@ extern "C" fn write_proxy(
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let fi_ref = unsafe { fi.as_mut() };
 
-    ops.write(rpath, arg2, arg3, arg4, arg5)
+    ops.write(rpath, arg2, arg3, arg4, fi_ref)
 }
 
 extern "C" fn statfs_proxy(
@@ -546,8 +569,9 @@ extern "C" fn flush_proxy(
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let fi_ref = unsafe { fi.as_mut() };
 
-    ops.flush(rpath, arg2)
+    ops.flush(rpath, fi_ref)
 }
 
 extern "C" fn release_proxy(
@@ -556,8 +580,9 @@ extern "C" fn release_proxy(
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let fi_ref = unsafe { fi.as_mut() };
 
-    ops.release(rpath, arg2)
+    ops.release(rpath, fi_ref)
 }
 
 extern "C" fn fsync_proxy(
@@ -567,8 +592,9 @@ extern "C" fn fsync_proxy(
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let fi_ref = unsafe { fi.as_mut() };
 
-    ops.fsync(rpath, arg2, arg3)
+    ops.fsync(rpath, arg2, fi_ref)
 }
 
 extern "C" fn setxattr_proxy(
@@ -625,8 +651,9 @@ extern "C" fn opendir_proxy(
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let fi_ref = unsafe { fi.as_mut() };
 
-    ops.opendir(rpath, arg2)
+    ops.opendir(rpath, fi_ref)
 }
 
 extern "C" fn readdir_proxy(
@@ -638,8 +665,9 @@ extern "C" fn readdir_proxy(
 ) -> c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let fi_ref = unsafe { fi.as_mut() };
 
-    ops.readdir(rpath, buf, filler, offset, fi)
+    ops.readdir(rpath, buf, filler, offset, fi_ref)
 }
 
 extern "C" fn releasedir_proxy(
@@ -648,8 +676,9 @@ extern "C" fn releasedir_proxy(
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let fi_ref = unsafe { fi.as_mut() };
 
-    ops.releasedir(rpath, arg2)
+    ops.releasedir(rpath, fi_ref)
 }
 
 extern "C" fn fsyncdir_proxy(
@@ -659,8 +688,9 @@ extern "C" fn fsyncdir_proxy(
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let fi_ref = unsafe { fi.as_mut() };
 
-    ops.fsyncdir(rpath, arg2, arg3)
+    ops.fsyncdir(rpath, arg2, fi_ref)
 }
 
 extern "C" fn access_proxy(
@@ -680,8 +710,9 @@ extern "C" fn create_proxy(
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let fi_ref = unsafe { fi.as_mut() };
 
-    ops.create(rpath, arg2, arg3)
+    ops.create(rpath, arg2, fi_ref)
 }
 
 extern "C" fn ftruncate_proxy(
@@ -691,8 +722,9 @@ extern "C" fn ftruncate_proxy(
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let fi_ref = unsafe { fi.as_mut() };
 
-    ops.ftruncate(rpath, arg2, arg3)
+    ops.ftruncate(rpath, arg2, fi_ref)
 }
 
 extern "C" fn fgetattr_proxy(
@@ -702,8 +734,9 @@ extern "C" fn fgetattr_proxy(
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let fi_ref = unsafe { fi.as_mut() };
 
-    ops.fgetattr(rpath, arg2, arg3)
+    ops.fgetattr(rpath, arg2, fi_ref)
 }
 
 extern "C" fn lock_proxy(
@@ -714,8 +747,9 @@ extern "C" fn lock_proxy(
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let fi_ref = unsafe { fi.as_mut() };
 
-    ops.lock(rpath, arg2, cmd, arg3)
+    ops.lock(rpath, fi_ref, cmd, arg3)
 }
 
 extern "C" fn utimens_proxy(
