@@ -40,34 +40,6 @@ impl FileSystem for HelloFS {
         }
     }
 
-    fn readdir(
-        &self,
-        path: String,
-        buf: *mut c_void,
-        filler: FuseFillDir,
-        _offset: off_t,
-        _fi: *mut FuseFileInfo,
-    ) -> c_int {
-        match path.as_str() {
-            "/" => {
-                match filler {
-                    Some(filler_func) => unsafe {
-                        let current_dir = CString::new(".").unwrap();
-                        let parent_dir = CString::new("..").unwrap();
-                        let hello_file = CString::new("hello").unwrap();
-
-                        filler_func(buf, current_dir.as_ptr(), ptr::null_mut(), 0);
-                        filler_func(buf, parent_dir.as_ptr(), ptr::null_mut(), 0);
-                        filler_func(buf, hello_file.as_ptr(), ptr::null_mut(), 0);
-                    },
-                    _ => {}
-                }
-                0
-            }
-            _ => -libc::ENOENT,
-        }
-    }
-
     fn open(&self, path: String, _fi: *mut FuseFileInfo) -> c_int {
         match path.as_str() {
             HELLO_PATH => 0,
@@ -91,6 +63,34 @@ impl FileSystem for HelloFS {
                     ptr::copy_nonoverlapping(content.as_ptr(), buf, content_len);
                 }
                 content_len as c_int
+            }
+            _ => -libc::ENOENT,
+        }
+    }
+
+    fn readdir(
+        &self,
+        path: String,
+        buf: *mut c_void,
+        filler: FuseFillDir,
+        _offset: off_t,
+        _fi: *mut FuseFileInfo,
+    ) -> c_int {
+        match path.as_str() {
+            "/" => {
+                match filler {
+                    Some(filler_func) => unsafe {
+                        let current_dir = CString::new(".").unwrap();
+                        let parent_dir = CString::new("..").unwrap();
+                        let hello_file = CString::new("hello").unwrap();
+
+                        filler_func(buf, current_dir.as_ptr(), ptr::null_mut(), 0);
+                        filler_func(buf, parent_dir.as_ptr(), ptr::null_mut(), 0);
+                        filler_func(buf, hello_file.as_ptr(), ptr::null_mut(), 0);
+                    },
+                    _ => {}
+                }
+                0
             }
             _ => -libc::ENOENT,
         }
