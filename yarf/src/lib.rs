@@ -522,7 +522,7 @@ extern "C" fn write_proxy(
     arg2: *const ::std::os::raw::c_char,
     arg3: usize,
     arg4: ::libc::off_t,
-    arg5: *mut ::yarf_sys::fuse_file_info,
+    fi: *mut FuseFileInfo,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
@@ -542,7 +542,7 @@ extern "C" fn statfs_proxy(
 
 extern "C" fn flush_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: *mut ::yarf_sys::fuse_file_info,
+    fi: *mut FuseFileInfo,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
@@ -552,7 +552,7 @@ extern "C" fn flush_proxy(
 
 extern "C" fn release_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: *mut ::yarf_sys::fuse_file_info,
+    fi: *mut FuseFileInfo,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
@@ -563,7 +563,7 @@ extern "C" fn release_proxy(
 extern "C" fn fsync_proxy(
     path: *const ::std::os::raw::c_char,
     arg2: ::std::os::raw::c_int,
-    arg3: *mut ::yarf_sys::fuse_file_info,
+    fi: *mut FuseFileInfo,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
@@ -621,7 +621,7 @@ extern "C" fn removexattr_proxy(
 
 extern "C" fn opendir_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: *mut ::yarf_sys::fuse_file_info,
+    fi: *mut FuseFileInfo,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
@@ -644,7 +644,7 @@ extern "C" fn readdir_proxy(
 
 extern "C" fn releasedir_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: *mut ::yarf_sys::fuse_file_info,
+    fi: *mut FuseFileInfo,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
@@ -655,7 +655,7 @@ extern "C" fn releasedir_proxy(
 extern "C" fn fsyncdir_proxy(
     path: *const ::std::os::raw::c_char,
     arg2: ::std::os::raw::c_int,
-    arg3: *mut ::yarf_sys::fuse_file_info,
+    fi: *mut FuseFileInfo,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
@@ -676,7 +676,7 @@ extern "C" fn access_proxy(
 extern "C" fn create_proxy(
     path: *const ::std::os::raw::c_char,
     arg2: ::libc::mode_t,
-    arg3: *mut ::yarf_sys::fuse_file_info,
+    fi: *mut FuseFileInfo,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
@@ -687,7 +687,7 @@ extern "C" fn create_proxy(
 extern "C" fn ftruncate_proxy(
     path: *const ::std::os::raw::c_char,
     arg2: ::libc::off_t,
-    arg3: *mut ::yarf_sys::fuse_file_info,
+    fi: *mut FuseFileInfo,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
@@ -698,7 +698,7 @@ extern "C" fn ftruncate_proxy(
 extern "C" fn fgetattr_proxy(
     path: *const ::std::os::raw::c_char,
     arg2: *mut ::libc::stat,
-    arg3: *mut ::yarf_sys::fuse_file_info,
+    fi: *mut FuseFileInfo,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
@@ -708,7 +708,7 @@ extern "C" fn fgetattr_proxy(
 
 extern "C" fn lock_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: *mut ::yarf_sys::fuse_file_info,
+    fi: *mut FuseFileInfo,
     cmd: ::std::os::raw::c_int,
     arg3: *mut ::libc::flock,
 ) -> ::std::os::raw::c_int {
