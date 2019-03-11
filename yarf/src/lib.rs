@@ -10,6 +10,7 @@ use libc::{off_t, stat};
 use std::ffi::{CStr, CString};
 use std::mem;
 use std::os::raw::{c_char, c_int, c_void};
+use std::slice;
 
 pub type FuseConnectionInfo = ::yarf_sys::fuse_conn_info;
 pub type FuseDirHandler = ::yarf_sys::fuse_dirh_t;
@@ -103,8 +104,7 @@ pub trait FileSystem {
     fn read(
         &self,
         _path: String,
-        _buf: *mut c_char,
-        _size: usize,
+        _buf: &mut [u8],
         _offset: off_t,
         _fi: Option<&mut FuseFileInfo>,
     ) -> c_int {
@@ -532,9 +532,10 @@ extern "C" fn read_proxy(
 ) -> c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let sbuf = unsafe { slice::from_raw_parts_mut(buf as *mut u8, size) };
     let fi_ref = unsafe { fi.as_mut() };
 
-    ops.read(rpath, buf, size, offset, fi_ref)
+    ops.read(rpath, sbuf, offset, fi_ref)
 }
 
 extern "C" fn write_proxy(

@@ -3,7 +3,8 @@ extern crate yarf;
 
 use libc::{off_t, stat};
 use std::ffi::CString;
-use std::os::raw::{c_char, c_int, c_void};
+use std::io::Write;
+use std::os::raw::{c_int, c_void};
 use std::ptr;
 use yarf::{FileSystem, FuseFileInfo, FuseFillDir};
 
@@ -42,18 +43,15 @@ impl FileSystem for HelloFS {
     fn read(
         &self,
         path: String,
-        buf: *mut c_char,
-        _size: usize,
+        buf: &mut [u8],
         _offset: off_t,
         _fi: Option<&mut FuseFileInfo>,
     ) -> c_int {
         match path.as_str() {
             HELLO_PATH => {
-                let content = CString::new(HELLO_CONTENT).unwrap();
                 let content_len = HELLO_CONTENT.len();
-                unsafe {
-                    ptr::copy_nonoverlapping(content.as_ptr(), buf, content_len);
-                }
+                let mut wbuf = buf;
+                wbuf.write(HELLO_CONTENT.as_bytes()).unwrap();
                 content_len as c_int
             }
             _ => -libc::ENOENT,
