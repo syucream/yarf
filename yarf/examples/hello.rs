@@ -2,11 +2,11 @@ extern crate libc;
 extern crate yarf;
 
 use libc::{off_t, stat};
-use std::ffi::CString;
 use std::io::Write;
-use std::os::raw::{c_int, c_void};
+use std::os::raw::c_int;
 use std::ptr;
-use yarf::{FileSystem, FuseFileInfo, FuseFillDir};
+use yarf::ReadDirFiller;
+use yarf::{FileSystem, FuseFileInfo};
 
 const HELLO_PATH: &str = "/hello";
 const HELLO_CONTENT: &str = "Hello, World!\n";
@@ -61,25 +61,15 @@ impl FileSystem for HelloFS {
     fn readdir(
         &self,
         path: String,
-        buf: *mut c_void,
-        filler: FuseFillDir,
+        filler: ReadDirFiller,
         _offset: off_t,
         _fi: Option<&mut FuseFileInfo>,
     ) -> c_int {
         match path.as_str() {
             "/" => {
-                match filler {
-                    Some(filler_func) => unsafe {
-                        let current_dir = CString::new(".").unwrap();
-                        let parent_dir = CString::new("..").unwrap();
-                        let hello_file = CString::new("hello").unwrap();
-
-                        filler_func(buf, current_dir.as_ptr(), ptr::null_mut(), 0);
-                        filler_func(buf, parent_dir.as_ptr(), ptr::null_mut(), 0);
-                        filler_func(buf, hello_file.as_ptr(), ptr::null_mut(), 0);
-                    },
-                    _ => {}
-                }
+                filler.fill(".", ptr::null(), 0);
+                filler.fill("..", ptr::null(), 0);
+                filler.fill("hello", ptr::null(), 0);
                 0
             }
             _ => -libc::ENOENT,

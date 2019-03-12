@@ -16,7 +16,6 @@ pub type FuseConnectionInfo = ::yarf_sys::fuse_conn_info;
 pub type FuseDirHandler = ::yarf_sys::fuse_dirh_t;
 pub type FuseDirFil = ::yarf_sys::fuse_dirfil_t;
 pub type FuseFileInfo = ::yarf_sys::fuse_file_info;
-pub type FuseFillDir = ::yarf_sys::fuse_fill_dir_t;
 pub type FuseOperations = ::yarf_sys::fuse_operations;
 
 #[doc = "A filesystem on FUSE"]
@@ -176,8 +175,7 @@ pub trait FileSystem {
     fn readdir(
         &self,
         _path: String,
-        _buf: *mut c_void,
-        _filler: FuseFillDir,
+        _filler: ReadDirFiller,
         _offset: off_t,
         _fi: Option<&mut FuseFileInfo>,
     ) -> c_int {
@@ -263,6 +261,36 @@ pub trait FileSystem {
     #[doc = " Map block index within file to block index within device"]
     fn bmap(&self, _path: String, _blocksize: usize, _idx: &mut u64) -> c_int {
         -libc::ENOSYS
+    }
+}
+
+#[doc = "safety fuse_fill_dir"]
+pub struct ReadDirFiller {
+    buf: *mut ::std::os::raw::c_void,
+    raw_filler: ::yarf_sys::fuse_fill_dir_t,
+}
+
+impl ReadDirFiller {
+    pub fn new(
+        buf: *mut ::std::os::raw::c_void,
+        raw_filler: ::yarf_sys::fuse_fill_dir_t,
+    ) -> ReadDirFiller {
+        ReadDirFiller { buf, raw_filler }
+    }
+
+    #[doc = "fill directory info"]
+    pub fn fill(
+        &self,
+        name: &str,
+        stbuf: *const stat,
+        offset: ::libc::off_t,
+    ) -> ::std::os::raw::c_int {
+        if let Some(func) = self.raw_filler {
+            if let Ok(cname) = CString::new(name) {
+                return unsafe { func(self.buf, cname.as_ptr(), stbuf, offset) };
+            }
+        }
+        -libc::EIO
     }
 }
 
@@ -657,15 +685,16 @@ extern "C" fn opendir_proxy(
 extern "C" fn readdir_proxy(
     path: *const c_char,
     buf: *mut c_void,
-    filler: FuseFillDir,
+    filler: ::yarf_sys::fuse_fill_dir_t,
     offset: off_t,
     fi: *mut FuseFileInfo,
 ) -> c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let rich_filler = ReadDirFiller::new(buf, filler);
     let fi_ref = unsafe { fi.as_mut() };
 
-    ops.readdir(rpath, buf, filler, offset, fi_ref)
+    ops.readdir(rpath, rich_filler, offset, fi_ref)
 }
 
 extern "C" fn releasedir_proxy(
