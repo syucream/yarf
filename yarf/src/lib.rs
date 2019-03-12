@@ -27,12 +27,7 @@ pub trait FileSystem {
     }
 
     #[doc = " Read the target of a symbolic link"]
-    fn readlink(
-        &self,
-        _path: String,
-        _arg2: *mut ::std::os::raw::c_char,
-        _arg3: usize,
-    ) -> ::std::os::raw::c_int {
+    fn readlink(&self, _path: String, _buf: &mut [u8]) -> ::std::os::raw::c_int {
         -libc::ENOSYS
     }
 
@@ -41,12 +36,12 @@ pub trait FileSystem {
     }
 
     #[doc = " Create a file node"]
-    fn mknod(&self, _path: String, _arg2: ::libc::mode_t, _arg3: ::libc::dev_t) -> c_int {
+    fn mknod(&self, _path: String, _mode: ::libc::mode_t, _dev: ::libc::dev_t) -> c_int {
         -libc::ENOSYS
     }
 
     #[doc = " Create a directory"]
-    fn mkdir(&self, _path: String, _arg2: ::libc::mode_t) -> c_int {
+    fn mkdir(&self, _path: String, _mode: ::libc::mode_t) -> c_int {
         -libc::ENOSYS
     }
 
@@ -61,37 +56,37 @@ pub trait FileSystem {
     }
 
     #[doc = " Create a symbolic link"]
-    fn symlink(&self, _path: String, _arg2: *const ::std::os::raw::c_char) -> c_int {
+    fn symlink(&self, _path1: String, _path2: String) -> c_int {
         -libc::ENOSYS
     }
 
     #[doc = " Rename a file"]
-    fn rename(&self, _path: String, _arg2: *const ::std::os::raw::c_char) -> c_int {
+    fn rename(&self, _old: String, _new: String) -> c_int {
         -libc::ENOSYS
     }
 
     #[doc = " Create a hard link to a file"]
-    fn link(&self, _path: String, _arg2: *const ::std::os::raw::c_char) -> c_int {
+    fn link(&self, _path1: String, _path2: String) -> c_int {
         -libc::ENOSYS
     }
 
     #[doc = " Change the permission bits of a file"]
-    fn chmod(&self, _path: String, _arg2: ::libc::mode_t) -> c_int {
+    fn chmod(&self, _path: String, _mode: ::libc::mode_t) -> c_int {
         -libc::ENOSYS
     }
 
     #[doc = " Change the owner and group of a file"]
-    fn chown(&self, _path: String, _arg2: ::libc::uid_t, _arg3: ::libc::gid_t) -> c_int {
+    fn chown(&self, _path: String, _uid: ::libc::uid_t, _gid: ::libc::gid_t) -> c_int {
         -libc::ENOSYS
     }
 
     #[doc = " Change the size of a file"]
-    fn truncate(&self, _path: String, _arg2: ::libc::off_t) -> c_int {
+    fn truncate(&self, _path: String, _offset: ::libc::off_t) -> c_int {
         -libc::ENOSYS
     }
 
     #[doc = " Change the access and/or modification times of a file"]
-    fn utime(&self, _path: String, _arg2: *mut ::libc::utimbuf) -> c_int {
+    fn utime(&self, _path: String, _utimbuf: Option<&mut ::libc::utimbuf>) -> c_int {
         -libc::ENOSYS
     }
 
@@ -115,16 +110,15 @@ pub trait FileSystem {
     fn write(
         &self,
         _path: String,
-        _arg2: *const ::std::os::raw::c_char,
-        _arg3: usize,
-        _arg4: ::libc::off_t,
+        _buf: &[u8],
+        _offset: ::libc::off_t,
         _fi: Option<&mut FuseFileInfo>,
     ) -> c_int {
         -libc::ENOSYS
     }
 
     #[doc = " Get file system statistics"]
-    fn statfs(&self, _path: String, _arg2: *mut ::libc::statvfs) -> c_int {
+    fn statfs(&self, _path: String, _statvfs: Option<&mut ::libc::statvfs>) -> c_int {
         0
     }
 
@@ -151,33 +145,25 @@ pub trait FileSystem {
     fn setxattr(
         &self,
         _path: String,
-        _arg2: *const ::std::os::raw::c_char,
-        _arg3: *const ::std::os::raw::c_char,
-        _arg4: usize,
+        _name: String,
+        _value: &[u8],
         _arg5: c_int,
         _arg6: u32,
     ) -> ::std::os::raw::c_int {
         -libc::ENOSYS
     }
 
-    fn getxattr(
-        &self,
-        _path: String,
-        _arg2: *const ::std::os::raw::c_char,
-        _arg3: *mut ::std::os::raw::c_char,
-        _arg4: usize,
-        _arg5: u32,
-    ) -> c_int {
+    fn getxattr(&self, _path: String, _name: String, _value: &[u8], _arg5: u32) -> c_int {
         -libc::ENOSYS
     }
 
     #[doc = " List extended attributes"]
-    fn listxattr(&self, _path: String, _arg2: *mut ::std::os::raw::c_char, _arg3: usize) -> c_int {
+    fn listxattr(&self, _path: String, _buf: &mut [u8]) -> c_int {
         -libc::ENOSYS
     }
 
     #[doc = " Remove extended attributes"]
-    fn removexattr(&self, _path: String, _arg2: *const ::std::os::raw::c_char) -> c_int {
+    fn removexattr(&self, _path: String, _name: String) -> c_int {
         -libc::ENOSYS
     }
 
@@ -224,7 +210,7 @@ pub trait FileSystem {
     // }
 
     #[doc = " Check file access permissions"]
-    fn access(&self, _path: String, _arg2: ::std::os::raw::c_int) -> c_int {
+    fn access(&self, _path: String, _mode: ::std::os::raw::c_int) -> c_int {
         -libc::ENOSYS
     }
 
@@ -232,7 +218,7 @@ pub trait FileSystem {
     fn create(
         &self,
         _path: String,
-        _arg2: ::libc::mode_t,
+        _mode: ::libc::mode_t,
         _fi: Option<&mut FuseFileInfo>,
     ) -> c_int {
         -libc::ENOSYS
@@ -242,7 +228,7 @@ pub trait FileSystem {
     fn ftruncate(
         &self,
         _path: String,
-        _arg2: ::libc::off_t,
+        _offset: ::libc::off_t,
         _fi: Option<&mut FuseFileInfo>,
     ) -> c_int {
         -libc::ENOSYS
@@ -252,7 +238,7 @@ pub trait FileSystem {
     fn fgetattr(
         &self,
         _path: String,
-        _stbuf: *mut ::libc::stat,
+        _stbuf: Option<&mut ::libc::stat>,
         _fi: Option<&mut FuseFileInfo>,
     ) -> c_int {
         -libc::ENOSYS
@@ -262,7 +248,7 @@ pub trait FileSystem {
     fn lock(
         &self,
         _path: String,
-        _arg2: Option<&mut FuseFileInfo>,
+        _fi: Option<&mut FuseFileInfo>,
         _cmd: ::std::os::raw::c_int,
         _arg3: *mut ::libc::flock,
     ) -> c_int {
@@ -270,12 +256,12 @@ pub trait FileSystem {
     }
 
     #[doc = " Change the access and modification times of a file with"]
-    fn utimens(&self, _path: String, _tv: *const ::libc::timespec) -> c_int {
+    fn utimens(&self, _path: String, _tv: ::libc::timespec) -> c_int {
         -libc::ENOSYS
     }
 
     #[doc = " Map block index within file to block index within device"]
-    fn bmap(&self, _path: String, _blocksize: usize, _idx: *mut u64) -> c_int {
+    fn bmap(&self, _path: String, _blocksize: usize, _idx: &mut u64) -> c_int {
         -libc::ENOSYS
     }
 }
@@ -389,13 +375,14 @@ extern "C" fn getattr_proxy(path: *const c_char, stbuf: *mut stat) -> c_int {
 
 extern "C" fn readlink_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: *mut ::std::os::raw::c_char,
-    arg3: usize,
+    buf: *mut ::std::os::raw::c_char,
+    size: usize,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let sbuf = unsafe { slice::from_raw_parts_mut(buf as *mut u8, size) };
 
-    ops.readlink(rpath, arg2, arg3)
+    ops.readlink(rpath, sbuf)
 }
 
 extern "C" fn getdir_proxy(
@@ -411,23 +398,23 @@ extern "C" fn getdir_proxy(
 
 extern "C" fn mknod_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: ::libc::mode_t,
-    arg3: ::libc::dev_t,
+    mode: ::libc::mode_t,
+    dev: ::libc::dev_t,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
 
-    ops.mknod(rpath, arg2, arg3)
+    ops.mknod(rpath, mode, dev)
 }
 
 extern "C" fn mkdir_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: ::libc::mode_t,
+    mode: ::libc::mode_t,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
 
-    ops.mkdir(rpath, arg2)
+    ops.mkdir(rpath, mode)
 }
 
 extern "C" fn unlink_proxy(path: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int {
@@ -445,74 +432,78 @@ extern "C" fn rmdir_proxy(path: *const ::std::os::raw::c_char) -> ::std::os::raw
 }
 
 extern "C" fn symlink_proxy(
-    path: *const ::std::os::raw::c_char,
-    arg2: *const ::std::os::raw::c_char,
+    path1: *const ::std::os::raw::c_char,
+    path2: *const ::std::os::raw::c_char,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
-    let rpath = to_rust_str(path);
+    let rpath1 = to_rust_str(path1);
+    let rpath2 = to_rust_str(path2);
 
-    ops.symlink(rpath, arg2)
+    ops.symlink(rpath1, rpath2)
 }
 
 extern "C" fn rename_proxy(
-    path: *const ::std::os::raw::c_char,
-    arg2: *const ::std::os::raw::c_char,
+    old: *const ::std::os::raw::c_char,
+    new: *const ::std::os::raw::c_char,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
-    let rpath = to_rust_str(path);
+    let old_str = to_rust_str(old);
+    let new_str = to_rust_str(new);
 
-    ops.rename(rpath, arg2)
+    ops.rename(old_str, new_str)
 }
 
 extern "C" fn link_proxy(
-    path: *const ::std::os::raw::c_char,
-    arg2: *const ::std::os::raw::c_char,
+    path1: *const ::std::os::raw::c_char,
+    path2: *const ::std::os::raw::c_char,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
-    let rpath = to_rust_str(path);
+    let rpath1 = to_rust_str(path1);
+    let rpath2 = to_rust_str(path2);
 
-    ops.link(rpath, arg2)
+    ops.link(rpath1, rpath2)
 }
 
 extern "C" fn chmod_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: ::libc::mode_t,
+    mode: ::libc::mode_t,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
 
-    ops.chmod(rpath, arg2)
+    ops.chmod(rpath, mode)
 }
 
 extern "C" fn chown_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: ::libc::uid_t,
-    arg3: ::libc::gid_t,
+    uid: ::libc::uid_t,
+    gid: ::libc::gid_t,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
 
-    ops.chown(rpath, arg2, arg3)
+    ops.chown(rpath, uid, gid)
 }
 
 extern "C" fn truncate_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: ::libc::off_t,
+    offset: ::libc::off_t,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
 
-    ops.truncate(rpath, arg2)
+    ops.truncate(rpath, offset)
 }
 
 extern "C" fn utime_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: *mut ::libc::utimbuf,
+    utimbuf: *mut ::libc::utimbuf,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let utimbuf_ref = unsafe { utimbuf.as_mut() };
 
-    ops.utime(rpath, arg2)
+    ops.utime(rpath, utimbuf_ref)
 }
 
 extern "C" fn open_proxy(path: *const c_char, fi: *mut FuseFileInfo) -> c_int {
@@ -540,26 +531,28 @@ extern "C" fn read_proxy(
 
 extern "C" fn write_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: *const ::std::os::raw::c_char,
-    arg3: usize,
-    arg4: ::libc::off_t,
+    buf: *const ::std::os::raw::c_char,
+    size: usize,
+    offset: ::libc::off_t,
     fi: *mut FuseFileInfo,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let sbuf = unsafe { slice::from_raw_parts(buf as *const u8, size) };
     let fi_ref = unsafe { fi.as_mut() };
 
-    ops.write(rpath, arg2, arg3, arg4, fi_ref)
+    ops.write(rpath, sbuf, offset, fi_ref)
 }
 
 extern "C" fn statfs_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: *mut ::libc::statvfs,
+    statvfs: *mut ::libc::statvfs,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let statvfs_ref = unsafe { statvfs.as_mut() };
 
-    ops.statfs(rpath, arg2)
+    ops.statfs(rpath, statvfs_ref)
 }
 
 extern "C" fn flush_proxy(
@@ -598,50 +591,56 @@ extern "C" fn fsync_proxy(
 
 extern "C" fn setxattr_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: *const ::std::os::raw::c_char,
-    arg3: *const ::std::os::raw::c_char,
-    arg4: usize,
+    name: *const ::std::os::raw::c_char,
+    value: *const ::std::os::raw::c_char,
+    size: usize,
     arg5: ::std::os::raw::c_int,
     arg6: u32,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let rname = to_rust_str(name);
+    let svalue = unsafe { slice::from_raw_parts(value as *const u8, size) };
 
-    ops.setxattr(rpath, arg2, arg3, arg4, arg5, arg6)
+    ops.setxattr(rpath, rname, svalue, arg5, arg6)
 }
 
 extern "C" fn getxattr_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: *const ::std::os::raw::c_char,
-    arg3: *mut ::std::os::raw::c_char,
-    arg4: usize,
+    name: *const ::std::os::raw::c_char,
+    value: *mut ::std::os::raw::c_char,
+    size: usize,
     arg5: u32,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let rname = to_rust_str(name);
+    let svalue = unsafe { slice::from_raw_parts(value as *const u8, size) };
 
-    ops.getxattr(rpath, arg2, arg3, arg4, arg5)
+    ops.getxattr(rpath, rname, svalue, arg5)
 }
 
 extern "C" fn listxattr_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: *mut ::std::os::raw::c_char,
-    arg3: usize,
+    value: *mut ::std::os::raw::c_char,
+    size: usize,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let svalue = unsafe { slice::from_raw_parts_mut(value as *mut u8, size) };
 
-    ops.listxattr(rpath, arg2, arg3)
+    ops.listxattr(rpath, svalue)
 }
 
 extern "C" fn removexattr_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: *const ::std::os::raw::c_char,
+    name: *const ::std::os::raw::c_char,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let rname = to_rust_str(name);
 
-    ops.removexattr(rpath, arg2)
+    ops.removexattr(rpath, rname)
 }
 
 extern "C" fn opendir_proxy(
@@ -694,48 +693,49 @@ extern "C" fn fsyncdir_proxy(
 
 extern "C" fn access_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: ::std::os::raw::c_int,
+    mode: ::std::os::raw::c_int,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
 
-    ops.access(rpath, arg2)
+    ops.access(rpath, mode)
 }
 
 extern "C" fn create_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: ::libc::mode_t,
+    mode: ::libc::mode_t,
     fi: *mut FuseFileInfo,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
     let fi_ref = unsafe { fi.as_mut() };
 
-    ops.create(rpath, arg2, fi_ref)
+    ops.create(rpath, mode, fi_ref)
 }
 
 extern "C" fn ftruncate_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: ::libc::off_t,
+    offset: ::libc::off_t,
     fi: *mut FuseFileInfo,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
     let fi_ref = unsafe { fi.as_mut() };
 
-    ops.ftruncate(rpath, arg2, fi_ref)
+    ops.ftruncate(rpath, offset, fi_ref)
 }
 
 extern "C" fn fgetattr_proxy(
     path: *const ::std::os::raw::c_char,
-    arg2: *mut ::libc::stat,
+    stbuf: *mut ::libc::stat,
     fi: *mut FuseFileInfo,
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
     let fi_ref = unsafe { fi.as_mut() };
+    let stbuf_ref = unsafe { stbuf.as_mut() };
 
-    ops.fgetattr(rpath, arg2, fi_ref)
+    ops.fgetattr(rpath, stbuf_ref, fi_ref)
 }
 
 extern "C" fn lock_proxy(
@@ -757,8 +757,9 @@ extern "C" fn utimens_proxy(
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let rtv = unsafe { tv.as_ref().unwrap() };
 
-    ops.utimens(rpath, tv)
+    ops.utimens(rpath, *rtv)
 }
 
 extern "C" fn bmap_proxy(
@@ -768,8 +769,9 @@ extern "C" fn bmap_proxy(
 ) -> ::std::os::raw::c_int {
     let ops = unsafe { get_filesystem() };
     let rpath = to_rust_str(path);
+    let ridx = unsafe { idx.as_mut().unwrap() };
 
-    ops.bmap(rpath, blocksize, idx)
+    ops.bmap(rpath, blocksize, ridx)
 }
 
 //
