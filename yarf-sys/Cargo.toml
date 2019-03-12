@@ -1,6 +1,6 @@
 [package]
 name = "yarf-sys"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["Ryo Okubo <syucream1031@gmail.com>"]
 license = "MIT"
 description = "An yet another rust-fuse, focuses on just only libfuse highlevel API binding ; sys crate"
