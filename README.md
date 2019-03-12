@@ -7,7 +7,7 @@ It's a [libfuse](https://github.com/libfuse/libfuse) binding in Rust. And it foc
 
 ## Documentation
 
-https://docs.rs/yarf/0.0.1/yarf/
+https://docs.rs/yarf/0.0.2/yarf/
 
 
 ## Usage
@@ -16,7 +16,7 @@ Require yarf crate in your `Cargo.toml`
 
 ```toml
 [dependencies]
-yarf = "0.0.1"
+yarf = "0.0.2"
 ```
 
 then you can write your filesystem as Rust struct on yarf, like below:
@@ -33,7 +33,7 @@ use yarf::{FileSystem, FuseFileInfo, FuseFillDir};
 struct MyFS;
 
 impl FileSystem for MyFS {
-    fn getattr(&self, path: String, stbuf: *mut stat) -> c_int {
+    fn getattr(&self, path: String, stbuf: Option<&mut stat>) -> c_int {
         ...
     }
 
